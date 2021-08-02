@@ -1,0 +1,10 @@
+# Editors
+Session.vim
+*#*
+
+# Generated
+docs/*
+bin/*
+lib/*
+doxygen.tag
+warnings.log
