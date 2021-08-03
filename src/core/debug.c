@@ -21,16 +21,16 @@
 void
 hnd_print_debug
 (
-  const char *_debug_mode,
-  const char *_debug_message,
+  const char *_mode,
+  const char *_message,
   const char *_reason
 )
 {
   /* If a NULL reason was passed, Hound will output an errno instead */
   if (_reason)
-    printf("%s:%d:%s %s - %s.", __FILE__, __LINE__, _debug_mode, _debug_message, _reason);
+    printf("%s:%d:%s %s - %s.", __FILE__, __LINE__, _mode, _message, _reason);
   else
-    printf("%s:%d:%s %s - %d:%s", __FILE__, __LINE__, _debug_mode, _debug_message, errno, strerror(errno));
+    printf("%s:%d:%s %s - %d:%s", __FILE__, __LINE__, _mode, _message, errno, strerror(errno));
 }
 
 int

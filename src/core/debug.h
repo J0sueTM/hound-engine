@@ -28,6 +28,10 @@
 #define HND_WARNING "[WARNING]:"
 #define HND_ERROR "[ERROR]:"
 
+/* debug messages */
+#define HND_CREATED(_object) "Created " _object
+#define HND_ENDED(_object) "Ended " _object
+
 /* reason */
 #define HND_SUCCESS "Assertion succeded"
 #define HND_FAILURE "Assertion failed"
@@ -36,8 +40,8 @@
 void
 hnd_print_debug
 (
-  const char *_debug_mode,
-  const char *_debug_message,
+  const char *_mode,
+  const char *_message,
   const char *_reason
 );
 

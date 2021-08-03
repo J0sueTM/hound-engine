@@ -23,21 +23,39 @@
 #include "video.h"
 
 /**
+ * @brief Data oub connection with xcb and current monitor/screen.
+ */
+typedef struct hnd_connection_t
+{
+  xcb_connection_t *xcb_connection; ///< Xcb/X11 server connection.
+  xcb_screen_t *screen_data;        ///< Current monitor/screen data.
+  int screen_number;                ///< Monitor/screen id.
+} hnd_connection_t;
+
+/**
  * @brief window data.
  */
 typedef struct hnd_window_t
 {
-  xcb_connection_t *x_server_connection; ///< Xorg server connection id.
-  xcb_screen_t *screen_data;             ///< Data of the screen being used to render the window.
-  int screen_number;                     ///< The id of the screen being used to render the window.
+  char *title;         ///< Window's title.
+  unsigned int width;  ///< Window's width.
+  unsigned int height; ///< Window's height.
+
+  hnd_connection_t connection;
+  xcb_window_t id;
 } hnd_window_t;
 
 /**
  * @brief Tries to connect to xorg server and creates a window
  *
- * @param _title  Specifies the text to be displayed on the new window's upper bar.
  * @note If the window style doesn't display the upper bar, the
  *       title won't be displayed as well.
+ *
+ * @param _title  Specifies the text to be displayed on the new window's upper bar.
+ * @param _left   Specifies the distance from the left side of the screen to the upper
+                  left corner of the window.
+ * @param _top    Specifies the distance from the top of the screen to the upper left
+                  corner of the window.
  * @param _width  Specifies the window's width.
  * @param _height Specifies the window's height.
  *
@@ -46,9 +64,11 @@ typedef struct hnd_window_t
 hnd_window_t *
 hnd_create_window
 (
-  const char *_title,
-  int         _width,
-  int         _height
+  const char   *_title,
+  unsigned int _left,
+  unsigned int _top,
+  unsigned int _width,
+  unsigned int _height
 );
 
 /**

@@ -42,5 +42,6 @@ add_link_options("-lxcb")
 target_link_libraries(Hound OpenGL::GL X11 ${X11_LIBRARIES})
 
 if (HOUND_BUILD_TEST)
+  add_definitions("-g")
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test/)
 endif ()

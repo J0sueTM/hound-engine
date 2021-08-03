@@ -16,5 +16,5 @@
 
 cmake_minimum_required(VERSION 3.20)
 
-add_executable(HoundWindowTest ${CMAKE_CURRENT_SOURCE_DIR}/window.c)
-target_link_libraries(HoundWindowTest Hound)
+add_executable(window ${CMAKE_CURRENT_SOURCE_DIR}/window.c)
+target_link_libraries(window Hound)

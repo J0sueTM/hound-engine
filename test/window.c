@@ -24,7 +24,13 @@ main
   void
 )
 {
-  hnd_window_t *window = hnd_create_window("Hound Engine Window Test", 800, 600);
+  hnd_window_t *window = hnd_create_window("Hound Engine Window Test", 100, 100, 800, 600);
+
+  while (1)
+  {
+    
+  }
+
   hnd_destroy_window(window);
   
   return (0);
