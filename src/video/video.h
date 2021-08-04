@@ -19,7 +19,25 @@
 #ifndef __HND_VIDEO_H__
 #define __HND_VIDEO_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif /* __cplusplus */
+
+#ifdef HND_USE_OPENGL
+#include <X11/Xlib-xcb.h>
+  
+#include <GL/glx.h>
+#include <GL/gl.h>
+#elif HND_USE_VULKAN
+#include <Vulkan.h>
+#endif /* HND_USE_OPENGL */
+
 #include <X11/Xlib.h>
 #include <xcb/xcb.h>
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* __HND_VIDEO_H__ */

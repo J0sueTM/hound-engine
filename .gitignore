@@ -8,3 +8,6 @@ bin/*
 lib/*
 doxygen.tag
 warnings.log
+
+# Whitelist
+!docs/org/*

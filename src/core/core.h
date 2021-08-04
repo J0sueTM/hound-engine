@@ -19,9 +19,18 @@
 #ifndef __HND_CORE_H__
 #define __HND_CORE_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif /* __cplusplus */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "debug.h"
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* __HND_CORE_H__ */

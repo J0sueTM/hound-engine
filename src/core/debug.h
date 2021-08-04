@@ -23,16 +23,20 @@
 #include <errno.h>
 #include <string.h>
 
-/* debug modes */
+/* Default returns  */
+#define HND_OK 1
+#define HND_NK 0
+
+/* Debug modes */
 #define HND_LOG "[LOG]:"
 #define HND_WARNING "[WARNING]:"
 #define HND_ERROR "[ERROR]:"
 
-/* debug messages */
+/* Debug messages */
 #define HND_CREATED(_object) "Created " _object
 #define HND_ENDED(_object) "Ended " _object
 
-/* reason */
+/* Reasons */
 #define HND_SUCCESS "Assertion succeded"
 #define HND_FAILURE "Assertion failed"
 #define HND_SYNTAX  "Syntax incorrect"

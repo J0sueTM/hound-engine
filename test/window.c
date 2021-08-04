@@ -28,7 +28,10 @@ main
 
   while (1)
   {
-    
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glXSwapBuffers(window->connection.display, window->gl_window);
   }
 
   hnd_destroy_window(window);

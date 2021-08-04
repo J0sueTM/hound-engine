@@ -1,7 +1,0 @@
-Hound Engine's TODO list
-
-[ ] - src/video/window.h
-      On the window creation function, create predefined values for values about the window position, like:
-      - HND_WINDOWPOS_UNDEFINED
-      - HND_WINDOWPOS_CENTER
-      ...

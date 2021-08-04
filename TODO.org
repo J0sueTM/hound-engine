@@ -1,0 +1,22 @@
+* Houng Engine TODO list
+
+** Core:
+   - *Debug* [3/4] [75%]
+     - [X] Log
+     - [X] Warning
+     - [X] Error
+     - [-] Assertion [1/2] [50%]
+       - [X] Text
+       - [ ] Window
+** Video:
+   - *Window* [1/2] [50%]
+     - [X] Initialisation
+     - [ ] Predefined [0/1] [0%]
+       - [ ] Position
+   - *Backend Integration* [1/4] [25%]
+     - [X] OpenGL
+     - [ ] Vulkan
+     - [ ] Software Rendering
+     - [ ] Context creation
+     
+** Audio:

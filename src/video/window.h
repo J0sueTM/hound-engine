@@ -19,6 +19,11 @@
 #ifndef __HND_WINDOW_H__
 #define __HND_WINDOW_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif /* __cplusplus */
+
 #include "../core/core.h"
 #include "video.h"
 
@@ -29,7 +34,15 @@ typedef struct hnd_connection_t
 {
   xcb_connection_t *xcb_connection; ///< Xcb/X11 server connection.
   xcb_screen_t *screen_data;        ///< Current monitor/screen data.
-  int screen_number;                ///< Monitor/screen id.
+  int default_screen;               ///< Default Monitor/screen id.
+
+#ifdef HND_USE_OPENGL
+  Display *display;                  ///< Xlib display.
+  GLXFBConfig *fb_configs;           ///< Frame buffer configs.
+  GLXFBConfig current_fb_config;     ///< Current frame buffer config.
+  int fb_config_count;               ///< Amount of fb_configs.
+  int visual_id;                     ///< Current frame buffer config's visual id.
+#endif /* HND_USE_OPENGL */
 } hnd_connection_t;
 
 /**
@@ -37,12 +50,22 @@ typedef struct hnd_connection_t
  */
 typedef struct hnd_window_t
 {
-  char *title;         ///< Window's title.
-  unsigned int width;  ///< Window's width.
-  unsigned int height; ///< Window's height.
+  char *title;
+  unsigned int width;
+  unsigned int height;
 
   hnd_connection_t connection;
   xcb_window_t id;
+  xcb_colormap_t colormap_id;
+
+  uint32_t event_mask;
+  uint32_t value_mask;
+  uint32_t value_list[3];
+
+#ifdef HND_USE_OPENGL
+  GLXContext gl_context;
+  GLXWindow gl_window;
+#endif /* HND_USE_OPENGL */
 } hnd_window_t;
 
 /**
@@ -65,10 +88,10 @@ hnd_window_t *
 hnd_create_window
 (
   const char   *_title,
-  unsigned int _left,
-  unsigned int _top,
-  unsigned int _width,
-  unsigned int _height
+  unsigned int  _left,
+  unsigned int  _top,
+  unsigned int  _width,
+  unsigned int  _height
 );
 
 /**
@@ -84,5 +107,9 @@ hnd_destroy_window
 (
   hnd_window_t *_window
 );
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* __HND_WINDOW_H__ */

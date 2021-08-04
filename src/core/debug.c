@@ -41,7 +41,7 @@ hnd_assert
 )
 {
   if ((!_assertion))
-    hnd_print_debug(HND_ERROR, HND_FAILURE, _reason);
+    hnd_print_debug(HND_ERROR, _reason, HND_FAILURE);
     
   return _assertion;
 }
