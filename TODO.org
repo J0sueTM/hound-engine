@@ -8,15 +8,21 @@
      - [-] Assertion [1/2] [50%]
        - [X] Text
        - [ ] Window
+   - *Events* [1/4] [25%]
+     - [X] Keyboard [1/1] [100%]
+       - [X] Key history
+     - [ ] Mouse
+     - [ ] Window
+     - [ ] Joystick
 ** Video:
-   - *Window* [1/2] [50%]
+   - *Window* [1/3] [33%]
      - [X] Initialisation
+     - [ ] Input
      - [ ] Predefined [0/1] [0%]
        - [ ] Position
-   - *Backend Integration* [1/4] [25%]
+   - *Backend Integration* [1/3] [33%]
      - [X] OpenGL
      - [ ] Vulkan
      - [ ] Software Rendering
-     - [ ] Context creation
      
 ** Audio:

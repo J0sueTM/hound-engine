@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <execinfo.h>
 
 /* Default returns  */
 #define HND_OK 1

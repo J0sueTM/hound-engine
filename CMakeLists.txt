@@ -28,26 +28,38 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 project(Hound VERSION 1.0 LANGUAGES C)
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(HOUND_SRC
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/window.c)
 
 find_package(X11 REQUIRED)
 if (HOUND_USE_OPENGL)
   find_package(OpenGL REQUIRED)
   set(HOUND_LIBRARIES X11 X11-xcb ${X11_LIBRARIES} OpenGL::GL)
-  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -D HND_USE_OPENGL")
+  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -O2 -D HND_USE_OPENGL")
+
+  set(HOUND_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/video/opengl_window.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/event.c)
 
   message("-- Rendering with OpenGL")
 elseif (HOUND_USE_VULKAN)
   find_package(Vulkan REQUIRED)
   set(HOUND_LIBRARIES X11 ${X11_LIBRARIES} Vulkan)
-  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -D HND_USE_VULKAN")
+  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -O2 -D HND_USE_VULKAN")
+  
+  set(HOUND_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/video/vulkan_window.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/event.c)
 
   message("-- Rendering with Vulkan")
 else ()
   set(HOUND_LIBRARIES X11 ${X11_LIBRARIES})
-  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -D HND_USE_SOFTWARE")
+  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -O2 -D HND_USE_SOFTWARE")
+
+  set(HOUND_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/video/software_window.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/event.c)
 
   message("-- Rendering with Software")
 endif ()
@@ -66,10 +78,6 @@ endif ()
 add_library(Hound ${HOUND_BUILD} ${HOUND_SRC})
 target_link_libraries(Hound ${HOUND_LIBRARIES})
 
-if (NOT HOUND_BUILD_TEST)
-  set(${HOUND_COMPILE_DEFINITIONS} "${HOUND_COMPILE_DEFINITIONS} -O2")
-  message("-- Using gcc optimization level 2")
-endif ()
 add_definitions(${HOUND_COMPILE_DEFINITIONS})
 add_link_options(${HOUND_LINK_OPTIONS})
 

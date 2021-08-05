@@ -25,6 +25,7 @@ extern "C"
 #endif /* __cplusplus */
 
 #include "../core/core.h"
+#include "../core/event/event.h"
 #include "video.h"
 
 /**
@@ -61,7 +62,7 @@ typedef struct hnd_window_t
   uint32_t event_mask;
   uint32_t value_mask;
   uint32_t value_list[3];
-
+  
 #ifdef HND_USE_OPENGL
   GLXContext gl_context;
   GLXWindow gl_window;
@@ -107,6 +108,35 @@ hnd_destroy_window
 (
   hnd_window_t *_window
 );
+
+/**
+ * @brief Repaints window.
+ *
+ * @param _red   Specifies the red channel.
+ * @param _green Specifies the green channel.
+ * @param _blue  Specifies the blue channel.
+ * @param _alpha Specifies the alpha channel.
+ */
+void
+hnd_clear_window
+(
+  float _red,
+  float _green,
+  float _blue,
+  float _alpha
+);
+
+/**
+ * @brief Swaps given window's rendering buffers.
+ *
+ * @param _window Specifies window whose buffers should be swapped.
+ */
+void
+hnd_swap_window_buffers
+(
+  hnd_window_t *_window
+);
+
 
 #ifdef __cplusplus
 }

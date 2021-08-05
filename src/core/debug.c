@@ -26,11 +26,10 @@ hnd_print_debug
   const char *_reason
 )
 {
-  /* If a NULL reason was passed, Hound will output an errno instead */
-  if (_reason)
-    printf("%s:%d:%s %s - %s.", __FILE__, __LINE__, _mode, _message, _reason);
-  else
-    printf("%s:%d:%s %s - %d:%s", __FILE__, __LINE__, _mode, _message, errno, strerror(errno));
+    if (_reason)
+      printf("%s %s - %s.\n", _mode, _message, _reason);
+    else
+      printf("%s %s - %d:%s.\t", _mode, _message, errno, strerror(errno));
 }
 
 int
@@ -40,7 +39,7 @@ hnd_assert
   const char *_reason
 )
 {
-  if ((!_assertion))
+  if (!(_assertion))
     hnd_print_debug(HND_ERROR, _reason, HND_FAILURE);
     
   return _assertion;

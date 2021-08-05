@@ -1,7 +1,7 @@
 /**
- * @file test/window.c
+ * @file src/video/vulkan_window.c
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
- * @date July 27, 2021
+ * @date August 04, 2021
  *
  * Copyright (C) 2021 Josue Teodoro Moreira
  *  
@@ -16,30 +16,5 @@
  * GNU General Public License for more details.
  */
 
-#include "../src/video/window.h"
+#include "window.h"
 
-int
-main
-(
-  void
-)
-{
-  hnd_window_t *window = hnd_create_window("Hound Engine Window Test", 100, 100, 800, 600);
-
-  hnd_event_t event;
-  int should_close = 0;
-  while (!should_close)
-  {
-    hnd_clear_window(0.2f, 0.2f, 0.2f, 1.0f);
-    hnd_poll_window_events(window->connection.xcb_connection, &event);
-
-    if (event.pressed_keys[0] == HND_KEY_ESC)
-      should_close = 1;
-
-    hnd_swap_window_buffers(window);
-  }
-
-  hnd_destroy_window(window);
-  
-  return (0);
-}
