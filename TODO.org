@@ -20,8 +20,8 @@
      - [ ] Input
      - [ ] Predefined [0/1] [0%]
        - [ ] Position
-   - *Backend Integration* [1/3] [33%]
-     - [X] OpenGL
+   - *Backend Integration* [0/3] [0%]
+     - [ ] OpenGL
      - [ ] Vulkan
      - [ ] Software Rendering
      

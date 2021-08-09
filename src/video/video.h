@@ -24,17 +24,48 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-#ifdef HND_USE_OPENGL
+#include "../core/core.h"
+#include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
-  
+#include <xcb/xcb.h>
+
+#ifdef HND_USE_OPENGL
 #include <GL/glx.h>
 #include <GL/gl.h>
 #elif HND_USE_VULKAN
-#include <Vulkan.h>
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_xcb.h>
 #endif /* HND_USE_OPENGL */
 
-#include <X11/Xlib.h>
-#include <xcb/xcb.h>
+/**
+ * @brief Creates an atom cookie.
+ *
+ * @param _connection Specifies the Xorg/Xcb server connection.
+ * @param _string     Specifies the new atom's id name.
+ *
+ * @return The created atom cookie.
+ */
+xcb_intern_atom_cookie_t
+hnd_intern_atom_cookie
+(
+  xcb_connection_t *_connection,
+  const char       *_string
+);
+
+/**
+ * @brief Creates an atom.
+ *
+ * @param _connection Specifies the Xorg/Xcb server connection.
+ * @param _cookie     Specifies the atom cookie the new atom should be based off.
+ *
+ * @return The created atom.
+ */
+xcb_atom_t
+hnd_intern_atom
+(
+  xcb_connection_t         *_connection,
+  xcb_intern_atom_cookie_t  _cookie
+);
 
 #ifdef __cplusplus
 }

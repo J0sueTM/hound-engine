@@ -18,11 +18,11 @@
 
 #include "event.h"
 
-static void
+void
 hnd_queue_key_event
 (
-  hnd_keyboard_key      *_key_history,
-  xcb_generic_event_t   *_xcb_event
+  hnd_keyboard_key    *_key_history,
+  xcb_generic_event_t *_xcb_event
 )
 {
   xcb_key_press_event_t *temp_key_event = (xcb_key_press_event_t *)_xcb_event;
@@ -33,25 +33,4 @@ hnd_queue_key_event
 
   /* Replaces the first with the new event */
   _key_history[0] = temp_key_event->detail;
-}
-
-void
-hnd_poll_window_events
-(
-  xcb_connection_t *_connection,
-  hnd_event_t      *_event
-)
-{
-  if (!hnd_assert(_connection != NULL, HND_SYNTAX))
-    return;
-  if (!hnd_assert(_event != NULL, HND_SYNTAX))
-    return;
-
-  _event->xcb_event = xcb_poll_for_event(_connection);
-  if (!_event->xcb_event)
-    return;
-  _event->xcb_event->response_type &= ~0x80;
-
-  if (_event->xcb_event->response_type == XCB_KEY_PRESS)
-    hnd_queue_key_event(_event->pressed_keys, _event->xcb_event);
 }

@@ -24,8 +24,8 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-#include <xcb/xcb.h>
 #include "../../core/core.h"
+#include "../../video/video.h"
 #include "keyboard.h"
 /*
 #include "mouse.h"
@@ -56,17 +56,11 @@ typedef struct hnd_event_t
   unsigned int released_key_history_count;
 } hnd_event_t;
 
-/**
- * @brief Gets the current event when active on window.
- *
- * @param _window Specifies the window where event should happen.
- * @param _event  Specifies the event struct where to allocate the poll.
- */
 void
-hnd_poll_window_events
+hnd_queue_key_event
 (
-  xcb_connection_t *_connection,
-  hnd_event_t      *_event
+  hnd_keyboard_key    *_key_history,
+  xcb_generic_event_t *_xcb_event
 );
 
 #ifdef __cplusplus

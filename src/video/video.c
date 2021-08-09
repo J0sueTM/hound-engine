@@ -1,7 +1,7 @@
 /**
- * @file test/window.c
+ * @file src/video/video.c
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
- * @date July 27, 2021
+ * @date July 08, 2021
  *
  * Copyright (C) 2021 Josue Teodoro Moreira
  *  
@@ -16,29 +16,32 @@
  * GNU General Public License for more details.
  */
 
-#include "../src/hound.h"
+#include "video.h"
 
-int
-main
+xcb_intern_atom_cookie_t
+hnd_intern_atom_cookie
 (
-  void
+  xcb_connection_t *_connection,
+  const char       *_string
 )
 {
-  hnd_window_t *window = hnd_create_window("Hound Engine Window Test", 0, 100, 100, 800, 600);
+  return xcb_intern_atom(_connection, HND_NK, strlen(_string), _string);
+}
 
-  hnd_event_t event;
-  while (window->running)
-  {
-    hnd_clear_render(0.2f, 0.2f, 0.2f, 1.0f);
-    hnd_poll_events(window, &event);
+xcb_atom_t
+hnd_intern_atom
+(
+  xcb_connection_t         *_connection,
+  xcb_intern_atom_cookie_t  _cookie
+)
+{
+  xcb_atom_t new_atom = XCB_ATOM_NONE;
+  xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(_connection, _cookie, NULL);
+  if (!hnd_assert(reply != NULL, "Could not create atom"))
+    return HND_NK;
 
-    if (event.pressed_keys[0] == HND_KEY_ESC)
-      window->running = HND_NK;
+  new_atom = reply->atom;
+  free(reply);
 
-    hnd_swap_renderer_buffers(&window->renderer);
-  }
-
-  hnd_destroy_window(window);
-  
-  return (0);
+  return new_atom;
 }

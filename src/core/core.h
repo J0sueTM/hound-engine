@@ -29,6 +29,12 @@ extern "C"
 #include <string.h>
 #include "debug.h"
 
+#define HND_NAME "Hound"
+#define HND_VERSION  "0.0.1"
+#define HND_VERSION_MAJOR 0
+#define HND_VERSION_MINOR 0
+#define HND_VERSION_PATCH 1
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

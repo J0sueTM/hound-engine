@@ -1,7 +1,7 @@
 /**
- * @file src/video/vulkan_window.c
+ * @file src/hound.h
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
- * @date August 04, 2021
+ * @date August 08, 2021
  *
  * Copyright (C) 2021 Josue Teodoro Moreira
  *  
@@ -16,5 +16,22 @@
  * GNU General Public License for more details.
  */
 
-#include "window.h"
+#ifndef __HND_H__
+#define __HND_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif /* __cplusplus */
+
+#include "core/core.h"
+#include "core/event/event.h"
+#include "video/video.h"
+#include "video/renderer/renderer.h"
+#include "video/window.h"
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* __HND_H__  */

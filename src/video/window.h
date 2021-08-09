@@ -27,24 +27,7 @@ extern "C"
 #include "../core/core.h"
 #include "../core/event/event.h"
 #include "video.h"
-
-/**
- * @brief Data oub connection with xcb and current monitor/screen.
- */
-typedef struct hnd_connection_t
-{
-  xcb_connection_t *xcb_connection; ///< Xcb/X11 server connection.
-  xcb_screen_t *screen_data;        ///< Current monitor/screen data.
-  int default_screen;               ///< Default Monitor/screen id.
-
-#ifdef HND_USE_OPENGL
-  Display *display;                  ///< Xlib display.
-  GLXFBConfig *fb_configs;           ///< Frame buffer configs.
-  GLXFBConfig current_fb_config;     ///< Current frame buffer config.
-  int fb_config_count;               ///< Amount of fb_configs.
-  int visual_id;                     ///< Current frame buffer config's visual id.
-#endif /* HND_USE_OPENGL */
-} hnd_connection_t;
+#include "renderer/renderer.h"
 
 /**
  * @brief window data.
@@ -52,21 +35,30 @@ typedef struct hnd_connection_t
 typedef struct hnd_window_t
 {
   char *title;
+  unsigned int border;
+  unsigned int left;
+  unsigned int top;
   unsigned int width;
   unsigned int height;
+  int running;
 
-  hnd_connection_t connection;
-  xcb_window_t id;
+  xcb_connection_t *connection;
+  xcb_screen_t *screen_data;
+#ifdef HND_USE_OPENGL
   xcb_colormap_t colormap_id;
+#endif /* HND_USE_OPENGL */
 
+  xcb_window_t id;
   uint32_t event_mask;
   uint32_t value_mask;
   uint32_t value_list[3];
-  
-#ifdef HND_USE_OPENGL
-  GLXContext gl_context;
-  GLXWindow gl_window;
-#endif /* HND_USE_OPENGL */
+
+  xcb_atom_t utf8_string;
+  xcb_atom_t wm_name;
+  xcb_atom_t wm_protocols;
+  xcb_atom_t wm_delete_window;
+
+  hnd_renderer_t renderer;
 } hnd_window_t;
 
 /**
@@ -76,6 +68,7 @@ typedef struct hnd_window_t
  *       title won't be displayed as well.
  *
  * @param _title  Specifies the text to be displayed on the new window's upper bar.
+ * @param _border Specifies the border's width.
  * @param _left   Specifies the distance from the left side of the screen to the upper
                   left corner of the window.
  * @param _top    Specifies the distance from the top of the screen to the upper left
@@ -83,12 +76,13 @@ typedef struct hnd_window_t
  * @param _width  Specifies the window's width.
  * @param _height Specifies the window's height.
  *
- * @return Created window.
+ * @return The created window.
  */
 hnd_window_t *
 hnd_create_window
 (
   const char   *_title,
+  unsigned int  _border,
   unsigned int  _left,
   unsigned int  _top,
   unsigned int  _width,
@@ -99,9 +93,6 @@ hnd_create_window
  * @brief Ends a window.
  *
  * @param _window Specifies the window to be destroyed.
- * @note Since a window should be allocated to the beginning to the end
- *       of hound's lifetime, you don't need to call this function. Let
- *       linux free your memory.
  */
 void
 hnd_destroy_window
@@ -110,33 +101,17 @@ hnd_destroy_window
 );
 
 /**
- * @brief Repaints window.
+ * @brief Gets the current event when active on window.
  *
- * @param _red   Specifies the red channel.
- * @param _green Specifies the green channel.
- * @param _blue  Specifies the blue channel.
- * @param _alpha Specifies the alpha channel.
+ * @param _window Specifies the window where event should happen.
+ * @param _event  Specifies the event struct where to allocate the poll.
  */
 void
-hnd_clear_window
+hnd_poll_events
 (
-  float _red,
-  float _green,
-  float _blue,
-  float _alpha
+  hnd_window_t *_window,
+  hnd_event_t  *_event
 );
-
-/**
- * @brief Swaps given window's rendering buffers.
- *
- * @param _window Specifies window whose buffers should be swapped.
- */
-void
-hnd_swap_window_buffers
-(
-  hnd_window_t *_window
-);
-
 
 #ifdef __cplusplus
 }

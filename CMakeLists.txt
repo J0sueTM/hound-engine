@@ -25,7 +25,9 @@ set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
-project(Hound VERSION 1.0 LANGUAGES C)
+project(Hound VERSION "0.0.1" LANGUAGES C)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/core.h.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/core.h)
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
@@ -34,35 +36,37 @@ if (HOUND_USE_OPENGL)
   find_package(OpenGL REQUIRED)
   set(HOUND_LIBRARIES X11 X11-xcb ${X11_LIBRARIES} OpenGL::GL)
   set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -O2 -D HND_USE_OPENGL")
-
-  set(HOUND_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/video/opengl_window.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/event.c)
-
+  set(HOUND_BACKEND "opengl")
+  
   message("-- Rendering with OpenGL")
 elseif (HOUND_USE_VULKAN)
   find_package(Vulkan REQUIRED)
-  set(HOUND_LIBRARIES X11 ${X11_LIBRARIES} Vulkan)
+  set(HOUND_LIBRARIES X11 ${X11_LIBRARIES} vulkan)
   set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -O2 -D HND_USE_VULKAN")
-  
-  set(HOUND_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/video/vulkan_window.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/event.c)
+  set(HOUND_BACKEND "vulkan")
 
   message("-- Rendering with Vulkan")
 else ()
   set(HOUND_LIBRARIES X11 ${X11_LIBRARIES})
   set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -O2 -D HND_USE_SOFTWARE")
-
-  set(HOUND_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/video/software_window.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/event.c)
+  set(HOUND_BACKEND "software")
 
   message("-- Rendering with Software")
 endif ()
+
+if (HOUND_DEBUG)
+  set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} -D HND_DEBUG")
+else ()
+  set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} -D HND_RELEASE")
+endif ()
+
+set(HOUND_SRC
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/event.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/video.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/window.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/renderer/${HOUND_BACKEND}_renderer.c)
+
 set(HOUND_LINK_OPTIONS "-lxcb")
 
 if (BUILD_SHARED_LIBS)

@@ -1,5 +1,5 @@
 /**
- * @file test/window.c
+ * @file src/core/core.h
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
  * @date July 27, 2021
  *
@@ -16,29 +16,27 @@
  * GNU General Public License for more details.
  */
 
-#include "../src/hound.h"
+#ifndef __HND_CORE_H__
+#define __HND_CORE_H__
 
-int
-main
-(
-  void
-)
+#ifdef __cplusplus
+extern "C"
 {
-  hnd_window_t *window = hnd_create_window("Hound Engine Window Test", 0, 100, 100, 800, 600);
+#endif /* __cplusplus */
 
-  hnd_event_t event;
-  while (window->running)
-  {
-    hnd_clear_render(0.2f, 0.2f, 0.2f, 1.0f);
-    hnd_poll_events(window, &event);
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "debug.h"
 
-    if (event.pressed_keys[0] == HND_KEY_ESC)
-      window->running = HND_NK;
+#define HND_NAME "@PROJECT_NAME@"
+#define HND_VERSION  "@PROJECT_VERSION@"
+#define HND_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define HND_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define HND_VERSION_PATCH @PROJECT_VERSION_PATCH@
 
-    hnd_swap_renderer_buffers(&window->renderer);
-  }
-
-  hnd_destroy_window(window);
-  
-  return (0);
+#ifdef __cplusplus
 }
+#endif /* __cplusplus */
+
+#endif /* __HND_CORE_H__ */

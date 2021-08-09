@@ -26,10 +26,10 @@ hnd_print_debug
   const char *_reason
 )
 {
-    if (_reason)
-      printf("%s %s - %s.\n", _mode, _message, _reason);
-    else
-      printf("%s %s - %d:%s.\t", _mode, _message, errno, strerror(errno));
+  if (_message)
+    printf("%s %s - %s.\n", _mode, _message, _reason);
+  else
+    printf("%s %d:%s - %s.\n", _mode, errno, strerror(errno), _reason);
 }
 
 int
