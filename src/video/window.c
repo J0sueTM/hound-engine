@@ -66,7 +66,7 @@ hnd_connect_to_xcb
 /**
  * @brief Sets window's title and adds close action listener.
  *
- * @param _window Specifise the window whose properties should change.
+ * @param _window Specifies the window whose properties should change.
  */
 static void
 hnd_set_window_properties
@@ -75,7 +75,7 @@ hnd_set_window_properties
 )
 {
   xcb_intern_atom_cookie_t utf8_string_cookie =
-    hnd_intern_atom_cookie(_window->connection, "UTF_STRING");
+    hnd_intern_atom_cookie(_window->connection, "UTF8_STRING");
   xcb_intern_atom_cookie_t wm_name_cookie =
     hnd_intern_atom_cookie(_window->connection, "WM_NAME");
   xcb_intern_atom_cookie_t wm_delete_cookie =

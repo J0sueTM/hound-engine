@@ -1,6 +1,7 @@
 # Editors
-Session.vim
-*#*
+Session.vim  # Vim sessions
+warnings.log # Flycheck, Emacs syntax and code checking minor mode.
+*#*          # Emacs temporary save files.
 
 # Generated
 docs/*
@@ -10,4 +11,4 @@ doxygen.tag
 warnings.log
 
 # Whitelist
-!docs/org/*
+!docs/org/* # My own notes, org files.

@@ -43,7 +43,6 @@ extern "C"
 #endif /* HND_PROJECT_VERSION_PATCH */
 
 #define HND_INSTANCE_EXTENSION_COUNT 2
-
 #define HND_VALIDATION_LAYER_COUNT 1
 
 typedef struct hnd_vulkan_renderer_t
@@ -59,7 +58,7 @@ typedef struct hnd_vulkan_renderer_t
   char *validation_layers[HND_VALIDATION_LAYER_COUNT];
   uint32_t supported_validation_layer_count;
 #endif /* HND_DEBUG */
-int are_validation_layers_supported;
+  int are_validation_layers_supported;
   
   int default_screen;
 } hnd_vulkan_renderer_t;
@@ -70,7 +69,19 @@ hnd_check_validation_layers_support
 (
   hnd_vulkan_renderer_t *_renderer
 );
+
+void
+hnd_create_debug_messenger
+(
+  hnd_vulkan_renderer_t *_renderer
+);
 #endif /* HND_DEBUG */
+
+int
+hnd_check_instance_extensions_support
+(
+  hnd_vulkan_renderer_t *_renderer
+);
 
 int
 hnd_create_instance

@@ -65,7 +65,12 @@ hnd_check_validation_layers_support
   vkEnumerateInstanceLayerProperties(&_renderer->supported_validation_layer_count,
                                      supported_validation_layers);
 
-  /* Check if all requseted validation layers are supported */
+  /*
+   * Check if all requested validation layers are supported
+   *
+   * @note Even if there's just one validation layer, this size can change with time,
+   * so I'm keeping the loop.
+   */
   int is_current_validation_layer_supported = HND_NK;
   for (uint32_t i = 0; i < HND_VALIDATION_LAYER_COUNT; ++i)
   {
@@ -89,6 +94,55 @@ hnd_check_validation_layers_support
   _renderer->are_validation_layers_supported = HND_OK;
 }
 #endif /* HND_DEBUG */
+
+int
+hnd_check_instance_extensions_support
+(
+  hnd_vulkan_renderer_t *_renderer
+)
+{
+#ifdef HND_DEBUG
+  if (_renderer->are_validation_layers_supported)
+  {
+    _renderer->instance_create_info.enabledLayerCount = HND_VALIDATION_LAYER_COUNT;
+    _renderer->instance_create_info.ppEnabledLayerNames = (const char *const *)_renderer->validation_layers;
+  }
+#else
+  _renderer->instance_create_info.enabledLayerCount = 0;
+#endif /* HND_DEBUG */
+
+  vkEnumerateInstanceExtensionProperties(NULL, &_renderer->supported_extension_count, NULL);
+  
+  VkExtensionProperties supported_extensions[_renderer->supported_extension_count];
+  vkEnumerateInstanceExtensionProperties(NULL, &_renderer->supported_extension_count, supported_extensions);
+
+  /* Check if all requested extensions are supported */
+  int is_current_extension_supported = HND_NK;
+  int are_all_extensions_supported = HND_OK;
+  for (uint32_t i = 0; i < HND_INSTANCE_EXTENSION_COUNT; ++i)
+  {
+    for (uint32_t j = 0; j < _renderer->supported_extension_count; ++j)
+    {
+      if (!strcmp(_renderer->instance_extensions[i], supported_extensions[j].extensionName))
+        is_current_extension_supported = HND_OK;
+    }
+
+    if (!is_current_extension_supported)
+    {
+      hnd_print_debug(HND_WARNING, "Incomplete vulkan instance extension support:", HND_FAILURE);
+      hnd_print_debug("          ", _renderer->instance_extensions[i], HND_FAILURE);
+
+      are_all_extensions_supported = HND_NK;
+    }
+      
+    is_current_extension_supported = HND_NK;
+  }
+
+  if (are_all_extensions_supported)
+    hnd_print_debug(HND_LOG, "All instance extensions are supported", HND_SUCCESS);
+  
+  return are_all_extensions_supported;
+}
 
 int
 hnd_create_instance
@@ -121,45 +175,14 @@ hnd_create_instance
   /* Instance extensions */
   _renderer->instance_extensions[0] = VK_KHR_SURFACE_EXTENSION_NAME;
   _renderer->instance_extensions[1] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
-  
+
   _renderer->instance_create_info.enabledExtensionCount = HND_INSTANCE_EXTENSION_COUNT;
   _renderer->instance_create_info.ppEnabledExtensionNames = (const char *const *)_renderer->instance_extensions;
 
-  /* Check instance support */
-  vkEnumerateInstanceExtensionProperties(NULL, &_renderer->supported_extension_count, NULL);
+  if (!hnd_check_instance_extensions_support(_renderer))
+    return HND_NK;
 
-#ifdef HND_DEBUG
-  if (_renderer->are_validation_layers_supported)
-  {
-    _renderer->instance_create_info.enabledLayerCount = HND_VALIDATION_LAYER_COUNT;
-    _renderer->instance_create_info.ppEnabledLayerNames = (const char *const *)_renderer->validation_layers;
-  }
-
-  /* Check instance extension support */
-  VkExtensionProperties supported_extensions[_renderer->supported_extension_count];
-  vkEnumerateInstanceExtensionProperties(NULL, &_renderer->supported_extension_count, supported_extensions);
-
-  /* Check if requested extensions are supported */
-  int is_current_extension_supported = HND_NK;
-  for (uint32_t i = 0; i < HND_INSTANCE_EXTENSION_COUNT; ++i)
-  {
-    for (uint32_t j = 0; j < _renderer->supported_extension_count; ++j)
-    {
-      if (!strcmp(_renderer->instance_extensions[i], supported_extensions[j].extensionName))
-        is_current_extension_supported = HND_OK;
-    }
-
-    if (!is_current_extension_supported)
-    {
-      hnd_print_debug(HND_WARNING, "Incomplete vulkan instance extension support:", HND_FAILURE);
-      hnd_print_debug("          ", _renderer->instance_extensions[i], HND_FAILURE);
-    }
-      
-    is_current_extension_supported = HND_NK;
-  }
-#endif /* HND_DEBUG */
-
-  /* Instance creatino */
+  /* Instance creation */
   VkResult instance_creation_result = vkCreateInstance(&_renderer->instance_create_info,
                                                        NULL,
                                                        &_renderer->instance);
@@ -185,7 +208,7 @@ hnd_clear_render
   float _alpha
 )
 {
-  /* IMPLEMENT ME(J)sueTM */
+  /* IMPLEMENT ME(JsueTM) */
 }
 
 void
@@ -194,5 +217,5 @@ hnd_swap_renderer_buffers
   hnd_renderer_t *_renderer
 )
 {
-  /* IMPLEMENT ME(J)sueTM */
+  /* IMPLEMENT ME(JsueTM) */
 }
