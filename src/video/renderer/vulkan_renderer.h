@@ -42,7 +42,12 @@ extern "C"
 #define HND_PROJECT_VERSION_PATCH 1
 #endif /* HND_PROJECT_VERSION_PATCH */
 
+#ifdef HND_DEBUG
+#define HND_INSTANCE_EXTENSION_COUNT 3
+#else
 #define HND_INSTANCE_EXTENSION_COUNT 2
+#endif /* HND_DEBUG */
+  
 #define HND_VALIDATION_LAYER_COUNT 1
 
 typedef struct hnd_vulkan_renderer_t
@@ -57,6 +62,9 @@ typedef struct hnd_vulkan_renderer_t
 #ifdef HND_DEBUG
   char *validation_layers[HND_VALIDATION_LAYER_COUNT];
   uint32_t supported_validation_layer_count;
+
+  VkDebugUtilsMessengerCreateInfoEXT messenger_create_info;
+  VkDebugUtilsMessengerEXT messenger;
 #endif /* HND_DEBUG */
   int are_validation_layers_supported;
   

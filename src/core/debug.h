@@ -61,4 +61,15 @@ hnd_assert
   const char *_reason
 );
 
+#if defined(HND_DEBUG) && defined(HND_USE_VULKAN)
+VKAPI_ATTR VkBool32 VKAPI_CALL
+vulkan_debug_callback
+(
+  VkDebugUtilsMessageSeverityFlagBitsEXT      _severity,
+  VkDebugUtilsMessageTypeFlagsEXT             _type,
+  const VkDebugUtilsMessengerCallbackDataEXT *_callback_data,
+  void                                       *_user_data
+);
+#endif /* HND_DEBUG && HND_USE_VULKAN */
+
 #endif /* __HND_DEBUG_H__ */

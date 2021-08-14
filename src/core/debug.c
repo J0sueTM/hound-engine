@@ -44,3 +44,30 @@ hnd_assert
     
   return _assertion;
 }
+
+#if defined(HND_DEBUG) && defined(HND_USE_VULKAN)
+VKAPI_ATTR VkBool32 VKAPI_CALL
+vulkan_debug_callback
+(
+  VkDebugUtilsMessageSeverityFlagBitsEXT      _severity,
+  VkDebugUtilsMessageTypeFlagsEXT             _type,
+  const VkDebugUtilsMessengerCallbackDataEXT *_callback_data,
+  void                                       *_user_data
+)
+{
+  /* We don't really care about logs */
+  if (_severity < VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    return VK_FALSE;
+
+  char *mode;
+  
+  if (_severity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    mode = HND_WARNING;
+  else
+    mode = HND_ERROR;
+
+  hnd_print_debug(mode, _callback_data->pMessage, HND_FAILURE);
+
+  return VK_FALSE;
+}
+#endif /* HND_DEBUG && HND_USE_VULKAN */

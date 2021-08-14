@@ -18,6 +18,42 @@
 
 #include "renderer.h"
 
+#ifdef HND_DEBUG
+static VkResult
+hnd_create_vulkan_debug_utils_messenger_ext
+(
+  VkInstance                                _instance,
+  const VkDebugUtilsMessengerCreateInfoEXT *_create_info,
+  const VkAllocationCallbacks              *_allocator,
+  VkDebugUtilsMessengerEXT                 *_messenger)
+{
+  PFN_vkCreateDebugUtilsMessengerEXT create_debug_utils_messenger_ext_function =
+    (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(_instance, "vkCreateDebugUtilsMessengerEXT");
+  
+  if (!create_debug_utils_messenger_ext_function)
+    return VK_ERROR_EXTENSION_NOT_PRESENT;
+
+  return create_debug_utils_messenger_ext_function(_instance, _create_info, _allocator, _messenger);
+}
+
+static void
+hnd_destroy_vulkan_debug_utils_messenger_ext
+(
+  VkInstance                   _instance,
+  VkDebugUtilsMessengerEXT     _messenger,
+  const VkAllocationCallbacks *_allocator
+)
+{
+  PFN_vkDestroyDebugUtilsMessengerEXT destroy_debug_utils_messenger_ext_function =
+    (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(_instance, "vkDestroyDebugutilsmessengerEXT");
+
+  if (!destroy_debug_utils_messenger_ext_function)
+    return;
+
+  destroy_debug_utils_messenger_ext_function(_instance, _messenger, _allocator);
+}
+#endif /* HND_DEBUG */
+
 int
 hnd_init_renderer
 (
@@ -45,6 +81,11 @@ hnd_end_renderer
   hnd_renderer_t *_renderer
 )
 {
+#ifdef HND_DEBUG
+  if (_renderer->are_validation_layers_supported)
+    hnd_destroy_vulkan_debug_utils_messenger_ext(_renderer->instance, _renderer->messenger, NULL);
+#endif /* HND_DEBUG */
+  
   vkDestroyInstance(_renderer->instance, NULL);
 }
 
@@ -65,12 +106,7 @@ hnd_check_validation_layers_support
   vkEnumerateInstanceLayerProperties(&_renderer->supported_validation_layer_count,
                                      supported_validation_layers);
 
-  /*
-   * Check if all requested validation layers are supported
-   *
-   * @note Even if there's just one validation layer, this size can change with time,
-   * so I'm keeping the loop.
-   */
+  /* Check if all requseted validation layers are supported */
   int is_current_validation_layer_supported = HND_NK;
   for (uint32_t i = 0; i < HND_VALIDATION_LAYER_COUNT; ++i)
   {
@@ -93,6 +129,30 @@ hnd_check_validation_layers_support
   
   _renderer->are_validation_layers_supported = HND_OK;
 }
+
+void
+hnd_create_debug_messenger
+(
+  hnd_vulkan_renderer_t *_renderer
+)
+{
+  _renderer->messenger_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+  _renderer->messenger_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                                                     VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                                                     VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+  _renderer->messenger_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT    |
+                                                 VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                                                 VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+  _renderer->messenger_create_info.pfnUserCallback = vulkan_debug_callback;
+  _renderer->messenger_create_info.pUserData = NULL;
+
+  VkResult messenger_creation_result = hnd_create_vulkan_debug_utils_messenger_ext(_renderer->instance,
+                                                                                   &_renderer->messenger_create_info,
+                                                                                   NULL,
+                                                                                   &_renderer->messenger);
+  if (messenger_creation_result != VK_SUCCESS)
+    hnd_print_debug(HND_ERROR, "Could not create debug messenger", HND_FAILURE);
+}
 #endif /* HND_DEBUG */
 
 int
@@ -101,22 +161,12 @@ hnd_check_instance_extensions_support
   hnd_vulkan_renderer_t *_renderer
 )
 {
-#ifdef HND_DEBUG
-  if (_renderer->are_validation_layers_supported)
-  {
-    _renderer->instance_create_info.enabledLayerCount = HND_VALIDATION_LAYER_COUNT;
-    _renderer->instance_create_info.ppEnabledLayerNames = (const char *const *)_renderer->validation_layers;
-  }
-#else
-  _renderer->instance_create_info.enabledLayerCount = 0;
-#endif /* HND_DEBUG */
-
   vkEnumerateInstanceExtensionProperties(NULL, &_renderer->supported_extension_count, NULL);
-  
+
   VkExtensionProperties supported_extensions[_renderer->supported_extension_count];
   vkEnumerateInstanceExtensionProperties(NULL, &_renderer->supported_extension_count, supported_extensions);
 
-  /* Check if all requested extensions are supported */
+  /* Check if requested extensions are supported */
   int is_current_extension_supported = HND_NK;
   int are_all_extensions_supported = HND_OK;
   for (uint32_t i = 0; i < HND_INSTANCE_EXTENSION_COUNT; ++i)
@@ -173,16 +223,28 @@ hnd_create_instance
   _renderer->instance_create_info.pApplicationInfo = &_renderer->application_info;
 
   /* Instance extensions */
+  _renderer->instance_create_info.enabledExtensionCount = HND_INSTANCE_EXTENSION_COUNT;
   _renderer->instance_extensions[0] = VK_KHR_SURFACE_EXTENSION_NAME;
   _renderer->instance_extensions[1] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
 
-  _renderer->instance_create_info.enabledExtensionCount = HND_INSTANCE_EXTENSION_COUNT;
+#ifdef HND_DEBUG
+  if (_renderer->are_validation_layers_supported)
+  {
+    _renderer->instance_create_info.enabledLayerCount = HND_VALIDATION_LAYER_COUNT;
+    _renderer->instance_create_info.ppEnabledLayerNames = (const char *const *)_renderer->validation_layers;
+  }
+
+  _renderer->instance_extensions[2] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+#else
+  _renderer->instance_create_info.enabledLayerCount = 0;
+#endif /* HND_DEBUG */
+  
   _renderer->instance_create_info.ppEnabledExtensionNames = (const char *const *)_renderer->instance_extensions;
 
   if (!hnd_check_instance_extensions_support(_renderer))
     return HND_NK;
 
-  /* Instance creation */
+  /* Instance creatino */
   VkResult instance_creation_result = vkCreateInstance(&_renderer->instance_create_info,
                                                        NULL,
                                                        &_renderer->instance);
