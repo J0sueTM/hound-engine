@@ -73,8 +73,15 @@ typedef struct hnd_vulkan_renderer_t
 #endif /* HND_DEBUG */
 
   /* Devices */
-  uint32_t physical_device_count;
   VkPhysicalDevice physical_device;
+  VkPhysicalDeviceFeatures physical_device_features;
+  uint32_t physical_device_count;
+  uint32_t physical_device_queue_family_with_graphics_bit_index;
+
+  VkDevice logical_device;
+  VkDeviceQueueCreateInfo logical_device_queue_create_info;
+  VkDeviceCreateInfo logical_device_create_info;
+
 } hnd_vulkan_renderer_t;
   
 #ifdef HND_DEBUG
@@ -142,6 +149,12 @@ hnd_create_instance
  */
 int
 hnd_get_physical_devices
+(
+  hnd_vulkan_renderer_t *_renderer
+);
+
+int
+hnd_create_logical_device
 (
   hnd_vulkan_renderer_t *_renderer
 );

@@ -54,7 +54,7 @@ hnd_destroy_vulkan_debug_utils_messenger_ext
 }
 #endif /* HND_DEBUG */
 
-static int
+static uint32_t
 hnd_check_physical_device_queue_family_properties
 (
   VkPhysicalDevice *_physical_device
@@ -69,19 +69,19 @@ hnd_check_physical_device_queue_family_properties
   vkGetPhysicalDeviceQueueFamilyProperties(*_physical_device, &queue_family_properties_count, queue_family_properties);
 
   /* Check for queue graphics bit support. */
-  int is_graphics_bit_supported = HND_NK;
+  uint32_t graphics_bit_index = HND_NK;
   for (uint32_t i = 0; i < queue_family_properties_count; ++i)
   {
     if ((queue_family_properties + i)->queueFlags & VK_QUEUE_GRAPHICS_BIT)
     {
-      is_graphics_bit_supported = HND_OK;
+      graphics_bit_index = i;
 
       goto end_queue_family_properties_check;
     }
   }
 
 end_queue_family_properties_check:
-  return is_graphics_bit_supported;
+  return graphics_bit_index;
 }
 
 static void
@@ -91,17 +91,17 @@ hnd_pick_best_physical_device
   VkPhysicalDevice *_physical_devices
 )
 {
-  /* Don't need to do extra work if there're no physical devices other than the default. */
   VkPhysicalDevice *best_physical_device = _physical_devices;
-  if (_renderer->physical_device_count == 1)
-    goto skip_physical_device_selection;
-  
   VkPhysicalDevice *current_physical_device;
+
   VkPhysicalDeviceProperties current_physical_device_properties;
   VkPhysicalDeviceFeatures current_physical_device_features;
   
   int best_physical_device_score = 0;
   int current_physical_device_score = 0;
+  
+  uint32_t best_physical_device_queue_family_with_graphics_bit_index = 0;
+  uint32_t current_physical_device_queue_family_with_graphics_bit_index = 0;
 
   /* Since we already assigned the best physical device to the first available physical device,
    * we need to begin from the second position.
@@ -116,8 +116,10 @@ hnd_pick_best_physical_device
     
     current_physical_device_score = 0;
 
-    if (!hnd_check_physical_device_queue_family_properties(current_physical_device) ||
-        !current_physical_device_features.geometryShader)
+    current_physical_device_queue_family_with_graphics_bit_index =
+      hnd_check_physical_device_queue_family_properties(current_physical_device);
+    
+    if (!current_physical_device_features.geometryShader)
       goto skip_physical_device_score_ranking;
 
     /* GPU type */
@@ -150,13 +152,17 @@ hnd_pick_best_physical_device
 skip_physical_device_score_ranking:
     if (current_physical_device_score > best_physical_device_score)
     {
-      best_physical_device = current_physical_device;
       best_physical_device_score = current_physical_device_score;
+      best_physical_device_queue_family_with_graphics_bit_index =
+        current_physical_device_queue_family_with_graphics_bit_index;
+      
+      best_physical_device = current_physical_device;
     }
   }
-
-skip_physical_device_selection:
+  
   _renderer->physical_device = *best_physical_device;
+  _renderer->physical_device_queue_family_with_graphics_bit_index =
+    best_physical_device_queue_family_with_graphics_bit_index;
 }
 
 int
@@ -178,6 +184,8 @@ hnd_init_renderer
     return HND_NK;
   if (!hnd_get_physical_devices(_renderer))
     return HND_NK;
+  if (!hnd_create_logical_device(_renderer))
+    return HND_NK;
   
   return HND_OK;
 }
@@ -192,7 +200,8 @@ hnd_end_renderer
   if (_renderer->are_validation_layers_supported)
     hnd_destroy_vulkan_debug_utils_messenger_ext(_renderer->instance, _renderer->messenger, NULL);
 #endif /* HND_DEBUG */
-  
+
+  vkDestroyDevice(_renderer->logical_device, NULL);
   vkDestroyInstance(_renderer->instance, NULL);
 }
 
@@ -397,7 +406,45 @@ hnd_get_physical_devices
 #endif /* HND_PICK_PHYSICAL_DEVICE */
 
   hnd_pick_best_physical_device(_renderer, physical_devices);
-  
+
+  hnd_print_debug(HND_LOG, HND_CREATED("physical device"), HND_SUCCESS);
+  return HND_OK;
+}
+
+int
+hnd_create_logical_device
+(
+  hnd_vulkan_renderer_t *_renderer
+)
+{
+  if (!hnd_assert(_renderer != NULL, HND_SYNTAX))
+    return HND_NK;
+
+  float logical_device_queue_create_info_priority = 1.0f;
+  _renderer->logical_device_queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+  _renderer->logical_device_queue_create_info.queueCount = 1;
+  _renderer->logical_device_queue_create_info.pQueuePriorities = &logical_device_queue_create_info_priority;
+  _renderer->logical_device_queue_create_info.queueFamilyIndex =
+    _renderer->physical_device_queue_family_with_graphics_bit_index;
+
+  _renderer->logical_device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  _renderer->logical_device_create_info.pQueueCreateInfos = &_renderer->logical_device_queue_create_info;
+  _renderer->logical_device_create_info.queueCreateInfoCount = 1;
+  _renderer->logical_device_create_info.pEnabledFeatures = &_renderer->physical_device_features;
+  _renderer->logical_device_create_info.enabledLayerCount = 0;
+
+  VkResult logical_device_creation_result = vkCreateDevice(_renderer->physical_device,
+                                                           &_renderer->logical_device_create_info,
+                                                           NULL,
+                                                           &_renderer->logical_device);
+  if (!hnd_assert(logical_device_creation_result == VK_SUCCESS, "Could not create logical device"))
+  {
+    printf("         Code: %d\n", logical_device_creation_result);
+    
+    return HND_NK;
+  }
+
+  hnd_print_debug(HND_LOG, HND_CREATED("logical device"), HND_SUCCESS);
   return HND_OK;
 }
 
