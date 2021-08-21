@@ -54,6 +54,111 @@ hnd_destroy_vulkan_debug_utils_messenger_ext
 }
 #endif /* HND_DEBUG */
 
+static int
+hnd_check_physical_device_queue_family_properties
+(
+  VkPhysicalDevice *_physical_device
+)
+{
+  uint32_t queue_family_properties_count;
+  vkGetPhysicalDeviceQueueFamilyProperties(*_physical_device, &queue_family_properties_count, NULL);
+  if (!hnd_assert(queue_family_properties_count > 0, "Not enough queue family properties"))
+    return HND_NK;
+
+  VkQueueFamilyProperties queue_family_properties[queue_family_properties_count];
+  vkGetPhysicalDeviceQueueFamilyProperties(*_physical_device, &queue_family_properties_count, queue_family_properties);
+
+  /* Check for queue graphics bit support. */
+  int is_graphics_bit_supported = HND_NK;
+  for (uint32_t i = 0; i < queue_family_properties_count; ++i)
+  {
+    if ((queue_family_properties + i)->queueFlags & VK_QUEUE_GRAPHICS_BIT)
+    {
+      is_graphics_bit_supported = HND_OK;
+
+      goto end_queue_family_properties_check;
+    }
+  }
+
+end_queue_family_properties_check:
+  return is_graphics_bit_supported;
+}
+
+static void
+hnd_pick_best_physical_device
+(
+  hnd_renderer_t   *_renderer,
+  VkPhysicalDevice *_physical_devices
+)
+{
+  /* Don't need to do extra work if there're no physical devices other than the default. */
+  VkPhysicalDevice *best_physical_device = _physical_devices;
+  if (_renderer->physical_device_count == 1)
+    goto skip_physical_device_selection;
+  
+  VkPhysicalDevice *current_physical_device;
+  VkPhysicalDeviceProperties current_physical_device_properties;
+  VkPhysicalDeviceFeatures current_physical_device_features;
+  
+  int best_physical_device_score = 0;
+  int current_physical_device_score = 0;
+
+  /* Since we already assigned the best physical device to the first available physical device,
+   * we need to begin from the second position.
+   */
+  for (uint32_t i = 1; i < _renderer->physical_device_count; ++i)
+  {
+    current_physical_device = (_physical_devices + i);
+
+    /* Get physical device data */
+    vkGetPhysicalDeviceProperties(*current_physical_device, &current_physical_device_properties);
+    vkGetPhysicalDeviceFeatures(*current_physical_device, &current_physical_device_features);
+    
+    current_physical_device_score = 0;
+
+    if (!hnd_check_physical_device_queue_family_properties(current_physical_device) ||
+        !current_physical_device_features.geometryShader)
+      goto skip_physical_device_score_ranking;
+
+    /* GPU type */
+    switch (current_physical_device_properties.deviceType)
+    {
+    case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+      current_physical_device_score += 10;
+      
+      break;
+    case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+      current_physical_device_score += 5;
+      
+      break;
+    case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+      current_physical_device_score += 2;
+      
+      break;
+    case VK_PHYSICAL_DEVICE_TYPE_CPU:
+      current_physical_device_score += 1;
+
+      break;
+    default:
+      current_physical_device_score += 0;
+ 
+      break;
+    }
+
+    current_physical_device_score += current_physical_device_properties.limits.maxImageDimension2D;
+
+skip_physical_device_score_ranking:
+    if (current_physical_device_score > best_physical_device_score)
+    {
+      best_physical_device = current_physical_device;
+      best_physical_device_score = current_physical_device_score;
+    }
+  }
+
+skip_physical_device_selection:
+  _renderer->physical_device = *best_physical_device;
+}
+
 int
 hnd_init_renderer
 (
@@ -70,6 +175,8 @@ hnd_init_renderer
 #endif /* HND_DEBUG */
 
   if (!hnd_create_instance(_renderer))
+    return HND_NK;
+  if (!hnd_get_physical_devices(_renderer))
     return HND_NK;
   
   return HND_OK;
@@ -106,7 +213,6 @@ hnd_check_validation_layers_support
   vkEnumerateInstanceLayerProperties(&_renderer->supported_validation_layer_count,
                                      supported_validation_layers);
 
-  /* Check if all requseted validation layers are supported */
   int is_current_validation_layer_supported = HND_NK;
   for (uint32_t i = 0; i < HND_VALIDATION_LAYER_COUNT; ++i)
   {
@@ -161,17 +267,17 @@ hnd_check_instance_extensions_support
   hnd_vulkan_renderer_t *_renderer
 )
 {
-  vkEnumerateInstanceExtensionProperties(NULL, &_renderer->supported_extension_count, NULL);
+  uint32_t supported_extension_count;
+  vkEnumerateInstanceExtensionProperties(NULL, &supported_extension_count, NULL);
 
-  VkExtensionProperties supported_extensions[_renderer->supported_extension_count];
-  vkEnumerateInstanceExtensionProperties(NULL, &_renderer->supported_extension_count, supported_extensions);
+  VkExtensionProperties supported_extensions[supported_extension_count];
+  vkEnumerateInstanceExtensionProperties(NULL, &supported_extension_count, supported_extensions);
 
-  /* Check if requested extensions are supported */
   int is_current_extension_supported = HND_NK;
   int are_all_extensions_supported = HND_OK;
   for (uint32_t i = 0; i < HND_INSTANCE_EXTENSION_COUNT; ++i)
   {
-    for (uint32_t j = 0; j < _renderer->supported_extension_count; ++j)
+    for (uint32_t j = 0; j < supported_extension_count; ++j)
     {
       if (!strcmp(_renderer->instance_extensions[i], supported_extensions[j].extensionName))
         is_current_extension_supported = HND_OK;
@@ -244,7 +350,7 @@ hnd_create_instance
   if (!hnd_check_instance_extensions_support(_renderer))
     return HND_NK;
 
-  /* Instance creatino */
+  /* Instance creation */
   VkResult instance_creation_result = vkCreateInstance(&_renderer->instance_create_info,
                                                        NULL,
                                                        &_renderer->instance);
@@ -258,6 +364,40 @@ hnd_create_instance
     return HND_NK;
 
   hnd_print_debug(HND_LOG, "Created vulkan instance", HND_SUCCESS);
+  return HND_OK;
+}
+
+int
+hnd_get_physical_devices
+(
+  hnd_vulkan_renderer_t *_renderer
+)
+{
+  if (!hnd_assert(_renderer != NULL, HND_SYNTAX))
+    return HND_NK;
+
+  vkEnumeratePhysicalDevices(_renderer->instance, &_renderer->physical_device_count, NULL);
+  if (!hnd_assert(_renderer->physical_device_count > 0,
+                  "Could not find GPUs with Vulkan physical devices (GPUs with Vulkan support)"))
+    return HND_NK;
+
+  VkPhysicalDevice physical_devices[_renderer->physical_device_count];
+  vkEnumeratePhysicalDevices(_renderer->instance, &_renderer->physical_device_count,
+                             physical_devices);
+  
+#ifdef HND_PICK_PHYSICAL_DEVICE
+  if (hnd_assert(HND_PICK_PHYSICAL_DEVICE >= 0 &&
+                 HND_PICK_PHYSICAL_DEVICE < physical_device_count,
+                 "Given HND_PICK_PHYSICAL_DEVICE is out of bound. Ignoring"))
+  {
+    _renderer->physical_device = *(_renderer->available_physical_devices + HND_PICK_PHYSICAL_DEVICE);
+    
+    return HND_OK;
+  }
+#endif /* HND_PICK_PHYSICAL_DEVICE */
+
+  hnd_pick_best_physical_device(_renderer, physical_devices);
+  
   return HND_OK;
 }
 

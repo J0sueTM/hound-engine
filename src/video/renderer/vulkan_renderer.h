@@ -50,15 +50,20 @@ extern "C"
   
 #define HND_VALIDATION_LAYER_COUNT 1
 
+/**
+ * @brief Vulkan renderer data.
+ */
 typedef struct hnd_vulkan_renderer_t
 {
+  int default_screen;
+
+  /* Instance */
   VkApplicationInfo application_info;
   VkInstanceCreateInfo instance_create_info;
   VkInstance instance;
-
   char *instance_extensions[HND_INSTANCE_EXTENSION_COUNT];
-  uint32_t supported_extension_count;
 
+  int are_validation_layers_supported;
 #ifdef HND_DEBUG
   char *validation_layers[HND_VALIDATION_LAYER_COUNT];
   uint32_t supported_validation_layer_count;
@@ -66,18 +71,30 @@ typedef struct hnd_vulkan_renderer_t
   VkDebugUtilsMessengerCreateInfoEXT messenger_create_info;
   VkDebugUtilsMessengerEXT messenger;
 #endif /* HND_DEBUG */
-  int are_validation_layers_supported;
-  
-  int default_screen;
-} hnd_vulkan_renderer_t;
 
+  /* Devices */
+  uint32_t physical_device_count;
+  VkPhysicalDevice physical_device;
+} hnd_vulkan_renderer_t;
+  
 #ifdef HND_DEBUG
+/**
+ * @brief Checks if validation layers in hnd_vulkan_renderer_t->validation_layers
+ *        are supported and can be enabled.
+ *
+ * @param _renderer Specifies the renderer containing the validation layers.
+ */
 void
 hnd_check_validation_layers_support
 (
   hnd_vulkan_renderer_t *_renderer
 );
 
+/**
+ * @brief Creates vulkan validation layers debug messenger.
+ *
+ * @param _renderer Specifies the renderer containing data used to create the debug messenger.
+ */
 void
 hnd_create_debug_messenger
 (
@@ -85,14 +102,46 @@ hnd_create_debug_messenger
 );
 #endif /* HND_DEBUG */
 
+/**
+ * @brief Checks if extensions in hnd_vulkan_renderer_t->instance_extensions
+ *        are supported and can be enabled.
+ *
+ * @param _renderer Specifies the renderer containing the instance extensions.
+ *
+ * @return Function state. HND_OK or HND_NK.
+ */
 int
 hnd_check_instance_extensions_support
 (
   hnd_vulkan_renderer_t *_renderer
 );
 
+/**
+ * @brief Creates vulkan instance.
+ *
+ * @param _renderer Specifies the renderer containing instance data.
+ *
+ * @return Function state. HND_OK or HND_NK.
+ */
 int
 hnd_create_instance
+(
+  hnd_vulkan_renderer_t *_renderer
+);
+
+/**
+ * @brief Gets vulkan devices.
+ *
+ * @note If HND_PICK_PHYSICAL_DEVICE is defined, Hound won't analyse all
+ *       available physical devices, but pick HND_PICK_PHYSICAL_DEVICE, if not
+ *       out of bound.
+ *
+ * @param _renderer Specifies the renderer containing physical device data.
+ *
+ * @return Function state. HND_OK or HND_NK.
+ */
+int
+hnd_get_physical_devices
 (
   hnd_vulkan_renderer_t *_renderer
 );
