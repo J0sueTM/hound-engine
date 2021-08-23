@@ -225,6 +225,10 @@ hnd_create_window
   }
 
   hnd_print_debug(HND_LOG, "Created OpenGL context", HND_SUCCESS);
+#else
+  hnd_create_surface(&new_window->renderer, new_window->connection, new_window->id);
+  hnd_create_swapchain(&new_window->renderer);
+  hnd_create_swapchain_image_views(&new_window->renderer);
 #endif /* HND_USE_OPENGL */
 
   new_window->running = HND_OK;
@@ -250,8 +254,6 @@ hnd_destroy_window
   xcb_destroy_window(_window->connection, _window->id);
   xcb_disconnect(_window->connection);
 #endif /* HND_USE_VULKAN */
-
-  free(_window);
 
   hnd_print_debug(HND_LOG, HND_ENDED("window"), HND_SUCCESS);
 }

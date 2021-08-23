@@ -27,13 +27,19 @@
      - [ ] Predefined [0/1] [0%]
        - [ ] Position
          
-   - *Backend Integration* [1/3] [33%]
+   - *Backend Integration* [2/3] [66%]
      - [X] OpenGL
-     - [-] Vulkan [1/2] [50%]
-       - [ ] Validation Layers
+     - [X] Vulkan [10/10] [100%]
+       - [X] Validation Layers
        - [X] Instance
-       - [ ] Physical Devices
-       - [ ] Logical Devices
+       - [X] Physical Devices
+       - [X] Logical Devices
+       - [X] Queue Families
+       - [X] Queue
+       - [X] Surface
+       - [X] Swapchain
+       - [X] Swapchain images
+       - [X] Swapchain image views
      - [ ] Software Rendering
      
 ** Audio:

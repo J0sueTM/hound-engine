@@ -49,6 +49,10 @@ extern "C"
 #endif /* HND_DEBUG */
   
 #define HND_VALIDATION_LAYER_COUNT 1
+#define HND_PHYSICAL_DEVICE_EXTENSION_COUNT 1
+#define HND_MAX_QUEUE_FAMILY_PROPERTIES 255
+#define HND_MAX_SWAPCHAIN_IMAGES 31
+#define HND_MAX_SWAPCHAIN_IMAGE_VIEWS 31
 
 /**
  * @brief Vulkan renderer data.
@@ -77,11 +81,30 @@ typedef struct hnd_vulkan_renderer_t
   VkPhysicalDeviceFeatures physical_device_features;
   uint32_t physical_device_count;
   uint32_t physical_device_queue_family_with_graphics_bit_index;
+  uint32_t physical_device_queue_family_with_surface_presentation_support_index;
+  char *physical_device_extensions[HND_PHYSICAL_DEVICE_EXTENSION_COUNT];
 
   VkDevice logical_device;
   VkDeviceQueueCreateInfo logical_device_queue_create_info;
   VkDeviceCreateInfo logical_device_create_info;
+  VkQueue logical_device_graphics_queue;
 
+  /* Surface */
+  VkSurfaceKHR surface;
+  VkXcbSurfaceCreateInfoKHR xcb_surface_create_info;
+  VkSurfaceCapabilitiesKHR surface_capabilities;
+  VkSurfaceFormatKHR surface_format;
+  VkPresentModeKHR surface_present_mode;
+  
+  /* Swapchain */
+  VkSwapchainKHR swapchain;
+  VkSwapchainCreateInfoKHR swapchain_create_info;
+  VkExtent2D swapchain_extent;
+  
+  uint32_t swapchain_image_count;
+  VkImage swapchain_images[HND_MAX_SWAPCHAIN_IMAGES];
+  VkImageView swapchain_image_views[HND_MAX_SWAPCHAIN_IMAGE_VIEWS];
+  VkImageViewCreateInfo swapchain_image_view_create_info;
 } hnd_vulkan_renderer_t;
   
 #ifdef HND_DEBUG
@@ -110,20 +133,6 @@ hnd_create_debug_messenger
 #endif /* HND_DEBUG */
 
 /**
- * @brief Checks if extensions in hnd_vulkan_renderer_t->instance_extensions
- *        are supported and can be enabled.
- *
- * @param _renderer Specifies the renderer containing the instance extensions.
- *
- * @return Function state. HND_OK or HND_NK.
- */
-int
-hnd_check_instance_extensions_support
-(
-  hnd_vulkan_renderer_t *_renderer
-);
-
-/**
  * @brief Creates vulkan instance.
  *
  * @param _renderer Specifies the renderer containing instance data.
@@ -134,6 +143,13 @@ int
 hnd_create_instance
 (
   hnd_vulkan_renderer_t *_renderer
+);
+
+int
+hnd_check_physical_device_extension_support
+(
+  hnd_vulkan_renderer_t *_renderer,
+  VkPhysicalDevice      *_device
 );
 
 /**
@@ -152,9 +168,29 @@ hnd_get_physical_devices
 (
   hnd_vulkan_renderer_t *_renderer
 );
-
+  
 int
 hnd_create_logical_device
+(
+  hnd_vulkan_renderer_t *_renderer
+);
+
+int
+hnd_create_surface
+(
+  hnd_vulkan_renderer_t *_renderer,
+  xcb_connection_t      *_connection,
+  xcb_window_t           _window
+);
+
+int
+hnd_create_swapchain
+(
+  hnd_vulkan_renderer_t *_renderer
+);
+
+int
+hnd_create_swapchain_image_views
 (
   hnd_vulkan_renderer_t *_renderer
 );

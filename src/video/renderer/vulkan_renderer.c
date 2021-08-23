@@ -54,40 +54,10 @@ hnd_destroy_vulkan_debug_utils_messenger_ext
 }
 #endif /* HND_DEBUG */
 
-static uint32_t
-hnd_check_physical_device_queue_family_properties
-(
-  VkPhysicalDevice *_physical_device
-)
-{
-  uint32_t queue_family_properties_count;
-  vkGetPhysicalDeviceQueueFamilyProperties(*_physical_device, &queue_family_properties_count, NULL);
-  if (!hnd_assert(queue_family_properties_count > 0, "Not enough queue family properties"))
-    return HND_NK;
-
-  VkQueueFamilyProperties queue_family_properties[queue_family_properties_count];
-  vkGetPhysicalDeviceQueueFamilyProperties(*_physical_device, &queue_family_properties_count, queue_family_properties);
-
-  /* Check for queue graphics bit support. */
-  uint32_t graphics_bit_index = HND_NK;
-  for (uint32_t i = 0; i < queue_family_properties_count; ++i)
-  {
-    if ((queue_family_properties + i)->queueFlags & VK_QUEUE_GRAPHICS_BIT)
-    {
-      graphics_bit_index = i;
-
-      goto end_queue_family_properties_check;
-    }
-  }
-
-end_queue_family_properties_check:
-  return graphics_bit_index;
-}
-
 static void
 hnd_pick_best_physical_device
 (
-  hnd_renderer_t   *_renderer,
+  hnd_vulkan_renderer_t   *_renderer,
   VkPhysicalDevice *_physical_devices
 )
 {
@@ -103,22 +73,54 @@ hnd_pick_best_physical_device
   uint32_t best_physical_device_queue_family_with_graphics_bit_index = 0;
   uint32_t current_physical_device_queue_family_with_graphics_bit_index = 0;
 
-  /* Since we already assigned the best physical device to the first available physical device,
-   * we need to begin from the second position.
-   */
-  for (uint32_t i = 1; i < _renderer->physical_device_count; ++i)
+  uint32_t current_physical_device_queue_family_properties_count;
+  VkQueueFamilyProperties current_physical_device_queue_family_properties[HND_MAX_QUEUE_FAMILY_PROPERTIES];
+  
+  for (uint32_t i = 0; i < _renderer->physical_device_count; ++i)
   {
     current_physical_device = (_physical_devices + i);
+    current_physical_device_score = 0;
 
     /* Get physical device data */
     vkGetPhysicalDeviceProperties(*current_physical_device, &current_physical_device_properties);
     vkGetPhysicalDeviceFeatures(*current_physical_device, &current_physical_device_features);
-    
-    current_physical_device_score = 0;
 
-    current_physical_device_queue_family_with_graphics_bit_index =
-      hnd_check_physical_device_queue_family_properties(current_physical_device);
+    /**
+     * @note This goes before checking geometry shader support since the physical device's
+     * queue family with graphics bit may not be the same as the best ranked in this loop.
+     */
+    vkGetPhysicalDeviceQueueFamilyProperties(*current_physical_device,
+                                             &current_physical_device_queue_family_properties_count,
+                                             NULL);
+    if (!hnd_assert(current_physical_device_queue_family_properties_count > 0, "Not enough queue family properties"))
+      goto skip_physical_device_score_ranking;
+
+    memset(current_physical_device_queue_family_properties,
+           0x00,
+           HND_MAX_QUEUE_FAMILY_PROPERTIES * sizeof(VkQueueFamilyProperties));
+    vkGetPhysicalDeviceQueueFamilyProperties(*current_physical_device,
+                                             &current_physical_device_queue_family_properties_count,
+                                             current_physical_device_queue_family_properties);
+   
+    for (uint32_t i = 0; i < current_physical_device_queue_family_properties_count; ++i)
+    {
+      if (current_physical_device_queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+      {
+        current_physical_device_queue_family_with_graphics_bit_index = i;
+
+        hnd_print_debug(HND_LOG, "Found queue family with graphics bit", HND_SUCCESS);
+#ifdef HND_DEBUG
+        printf("       Code: %d\n", i);
+#endif /* HND_DEBUG */
+
+        break;
+      }
+    }
     
+    if (!hnd_check_physical_device_extension_support(_renderer, current_physical_device))
+      goto skip_physical_device_score_ranking;
+    if (!current_physical_device_queue_family_with_graphics_bit_index)
+      goto skip_physical_device_score_ranking;
     if (!current_physical_device_features.geometryShader)
       goto skip_physical_device_score_ranking;
 
@@ -165,10 +167,24 @@ skip_physical_device_score_ranking:
     best_physical_device_queue_family_with_graphics_bit_index;
 }
 
+static void
+hnd_get_swapchain_images
+(
+  hnd_vulkan_renderer_t *_renderer
+)
+{
+  memset(_renderer->swapchain_images, 0x00, HND_MAX_SWAPCHAIN_IMAGES * sizeof(VkImage));
+
+  vkGetSwapchainImagesKHR(_renderer->logical_device,
+                          _renderer->swapchain,
+                          &_renderer->swapchain_image_count,
+                          _renderer->swapchain_images);
+}
+
 int
 hnd_init_renderer
 (
-  hnd_renderer_t *_renderer
+  hnd_vulkan_renderer_t *_renderer
 )
 {
   if (!hnd_assert(_renderer != NULL, HND_SYNTAX))
@@ -193,7 +209,7 @@ hnd_init_renderer
 void
 hnd_end_renderer
 (
-  hnd_renderer_t *_renderer
+  hnd_vulkan_renderer_t *_renderer
 )
 {
 #ifdef HND_DEBUG
@@ -201,6 +217,11 @@ hnd_end_renderer
     hnd_destroy_vulkan_debug_utils_messenger_ext(_renderer->instance, _renderer->messenger, NULL);
 #endif /* HND_DEBUG */
 
+  for (uint32_t i = 0; i < _renderer->swapchain_image_count; ++i)
+    vkDestroyImageView(_renderer->logical_device, _renderer->swapchain_image_views[i], NULL);
+    
+  vkDestroySwapchainKHR(_renderer->logical_device, _renderer->swapchain, NULL);
+  vkDestroySurfaceKHR(_renderer->instance, _renderer->surface, NULL);
   vkDestroyDevice(_renderer->logical_device, NULL);
   vkDestroyInstance(_renderer->instance, NULL);
 }
@@ -267,9 +288,19 @@ hnd_create_debug_messenger
                                                                                    &_renderer->messenger);
   if (messenger_creation_result != VK_SUCCESS)
     hnd_print_debug(HND_ERROR, "Could not create debug messenger", HND_FAILURE);
+
+  hnd_print_debug(HND_LOG, HND_CREATED("debug messenger"), HND_SUCCESS);
 }
 #endif /* HND_DEBUG */
 
+/**
+ * @brief Checks if extensions in hnd_vulkan_renderer_t->instance_extensions
+ *        are supported and can be enabled.
+ *
+ * @param _renderer Specifies the renderer containing the instance extensions.
+ *
+ * @return Function state. HND_OK or HND_NK.
+ */
 int
 hnd_check_instance_extensions_support
 (
@@ -282,6 +313,11 @@ hnd_check_instance_extensions_support
   VkExtensionProperties supported_extensions[supported_extension_count];
   vkEnumerateInstanceExtensionProperties(NULL, &supported_extension_count, supported_extensions);
 
+  /**
+   * @note If we're looking for a specific extension, we loop through supported_extensions until
+   * we whether find an occurence or reach the end. Otherwise, if we're looking for all extensions support,
+   * we'll loop through both required extensions and available.
+   */
   int is_current_extension_supported = HND_NK;
   int are_all_extensions_supported = HND_OK;
   for (uint32_t i = 0; i < HND_INSTANCE_EXTENSION_COUNT; ++i)
@@ -296,16 +332,14 @@ hnd_check_instance_extensions_support
     {
       hnd_print_debug(HND_WARNING, "Incomplete vulkan instance extension support:", HND_FAILURE);
       hnd_print_debug("          ", _renderer->instance_extensions[i], HND_FAILURE);
-
+  
       are_all_extensions_supported = HND_NK;
     }
-      
+    
     is_current_extension_supported = HND_NK;
   }
 
-  if (are_all_extensions_supported)
-    hnd_print_debug(HND_LOG, "All instance extensions are supported", HND_SUCCESS);
-  
+  hnd_print_debug(HND_LOG, "All instance extensions are supported", HND_SUCCESS);
   return are_all_extensions_supported;
 }
 
@@ -377,6 +411,47 @@ hnd_create_instance
 }
 
 int
+hnd_check_physical_device_extension_support
+(
+  hnd_vulkan_renderer_t *_renderer,
+  VkPhysicalDevice      *_device
+)
+{
+  uint32_t supported_extension_count;
+  vkEnumerateDeviceExtensionProperties(*_device, NULL, &supported_extension_count, NULL);
+  if (!hnd_assert(supported_extension_count > 0, "Not enough supported physical device extensions"))
+    return HND_NK;
+
+  VkExtensionProperties supported_extensions[supported_extension_count];
+  vkEnumerateDeviceExtensionProperties(*_device, NULL, &supported_extension_count, supported_extensions);
+
+  int is_current_extension_supported = HND_NK;
+  int are_all_extensions_supported = HND_OK;
+  for (uint32_t i = 0; i < HND_PHYSICAL_DEVICE_EXTENSION_COUNT; ++i)
+  {
+    for (uint32_t j = 0; j < supported_extension_count; ++j)
+    {
+      if (!strcmp(_renderer->physical_device_extensions[i], supported_extensions[j].extensionName))
+        is_current_extension_supported = HND_OK;
+    }
+
+    if (!hnd_assert(is_current_extension_supported, "Incomplete physical device extensions support"))
+    {
+      printf("      %s", _renderer->physical_device_extensions[i]);
+      
+      are_all_extensions_supported = HND_NK;
+      goto skip_physical_device_extension_support_check;
+    }
+    
+    is_current_extension_supported = HND_NK;
+  }
+
+  hnd_print_debug(HND_LOG, "All physical device extensions are supported", HND_SUCCESS);
+skip_physical_device_extension_support_check:
+  return are_all_extensions_supported;
+}
+
+int
 hnd_get_physical_devices
 (
   hnd_vulkan_renderer_t *_renderer
@@ -405,6 +480,7 @@ hnd_get_physical_devices
   }
 #endif /* HND_PICK_PHYSICAL_DEVICE */
 
+  _renderer->physical_device_extensions[0] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
   hnd_pick_best_physical_device(_renderer, physical_devices);
 
   hnd_print_debug(HND_LOG, HND_CREATED("physical device"), HND_SUCCESS);
@@ -432,19 +508,278 @@ hnd_create_logical_device
   _renderer->logical_device_create_info.queueCreateInfoCount = 1;
   _renderer->logical_device_create_info.pEnabledFeatures = &_renderer->physical_device_features;
   _renderer->logical_device_create_info.enabledLayerCount = 0;
-
+  _renderer->logical_device_create_info.enabledExtensionCount = HND_PHYSICAL_DEVICE_EXTENSION_COUNT;
+  _renderer->logical_device_create_info.ppEnabledExtensionNames =
+    (const char *const *)_renderer->physical_device_extensions;
+  
   VkResult logical_device_creation_result = vkCreateDevice(_renderer->physical_device,
                                                            &_renderer->logical_device_create_info,
                                                            NULL,
                                                            &_renderer->logical_device);
   if (!hnd_assert(logical_device_creation_result == VK_SUCCESS, "Could not create logical device"))
   {
+#ifdef HND_DEBUG
     printf("         Code: %d\n", logical_device_creation_result);
+#endif /* HND_DEBUG */
     
     return HND_NK;
   }
 
+  vkGetDeviceQueue(_renderer->logical_device,
+                   _renderer->physical_device_queue_family_with_graphics_bit_index,
+                   0,
+                   &_renderer->logical_device_graphics_queue);
+
   hnd_print_debug(HND_LOG, HND_CREATED("logical device"), HND_SUCCESS);
+  return HND_OK;
+}
+
+int
+hnd_create_surface
+(
+  hnd_vulkan_renderer_t *_renderer,
+  xcb_connection_t      *_connection,
+  xcb_window_t           _window
+)
+{
+  if (!hnd_assert(_renderer != NULL, HND_SYNTAX))
+    return HND_NK;
+
+  _renderer->xcb_surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+  _renderer->xcb_surface_create_info.connection = _connection;
+  _renderer->xcb_surface_create_info.window = _window;
+
+  VkResult xcb_surface_creation_result = vkCreateXcbSurfaceKHR(_renderer->instance,
+                                                               &_renderer->xcb_surface_create_info,
+                                                               NULL,
+                                                               &_renderer->surface);
+  if (!hnd_assert(xcb_surface_creation_result == VK_SUCCESS, "Could not create xcb surface"))
+    return HND_NK;
+
+
+  /** @note Picks chosen physical device's queue family with support for surface presentation */
+  uint32_t physical_device_queue_family_count;
+  vkGetPhysicalDeviceQueueFamilyProperties(_renderer->physical_device, &physical_device_queue_family_count, NULL);
+
+  /**
+   * @note If there're not enough queue families, then we're supposing that the chosen rendering capable family
+   * is the same as the presentation supported.
+   */
+  _renderer->physical_device_queue_family_with_surface_presentation_support_index =
+    _renderer->physical_device_queue_family_with_graphics_bit_index;
+  VkBool32 found_physical_device_queue_family_with_surface_presentation_support;
+  if (hnd_assert(physical_device_queue_family_count > 0, "Not enough queue families"))
+  {
+    for (uint32_t i = 0; i < physical_device_queue_family_count; ++i)
+    {
+      vkGetPhysicalDeviceSurfaceSupportKHR(_renderer->physical_device,
+                                           i,
+                                           _renderer->surface,
+                                           &found_physical_device_queue_family_with_surface_presentation_support);
+
+      if (found_physical_device_queue_family_with_surface_presentation_support == VK_TRUE)
+      {
+        _renderer->physical_device_queue_family_with_surface_presentation_support_index = i;
+
+        hnd_print_debug(HND_LOG, "Found queue family with surface presentation support", HND_SUCCESS);
+#ifdef HND_DEBUG
+        printf("       Code: %d\n", i);
+#endif /* HND_DEBUG */
+          
+        break;
+      }
+    }
+  }
+
+  hnd_print_debug(HND_LOG, HND_CREATED("xcb surface"), HND_SUCCESS);
+  return HND_OK;
+}
+
+int
+hnd_create_swapchain
+(
+  hnd_vulkan_renderer_t *_renderer
+)
+{
+  if (!hnd_assert(_renderer != NULL, HND_SYNTAX))
+    return HND_NK;
+
+  VkResult surface_capabilities_result =
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_renderer->physical_device,
+                                              _renderer->surface,
+                                              &_renderer->surface_capabilities);
+  if (!hnd_assert(surface_capabilities_result == VK_SUCCESS, "Could not query surface capabilities"))
+  {
+#ifdef HND_DEBUG
+    printf("         Code: %d", surface_capabilities_result);
+#endif /* HND_DEBUG */
+    
+    return HND_NK;
+  }
+
+  uint32_t surface_format_count;
+  vkGetPhysicalDeviceSurfaceFormatsKHR(_renderer->physical_device,
+                                       _renderer->surface,
+                                       &surface_format_count,
+                                       NULL);
+  if (!hnd_assert(surface_format_count > 0, "Not enough surface formats"))
+    return HND_NK;
+  VkSurfaceFormatKHR surface_formats[surface_format_count];
+  vkGetPhysicalDeviceSurfaceFormatsKHR(_renderer->physical_device,
+                                       _renderer->surface,
+                                       &surface_format_count,
+                                       surface_formats);
+
+  uint32_t surface_present_mode_count;
+  vkGetPhysicalDeviceSurfacePresentModesKHR(_renderer->physical_device,
+                                            _renderer->surface,
+                                            &surface_present_mode_count,
+                                            NULL);
+  if (!hnd_assert(surface_present_mode_count > 0, "Not enough surface present modes"))
+    return HND_NK;
+  VkPresentModeKHR surface_present_modes[surface_present_mode_count];
+  vkGetPhysicalDeviceSurfacePresentModesKHR(_renderer->physical_device,
+                                            _renderer->surface,
+                                            &surface_present_mode_count,
+                                            surface_present_modes);
+
+  /** @note Picks the best swapchain surface format, based on each format's data. */
+  VkSurfaceFormatKHR *best_surface_format = &surface_formats[0];
+  int best_surface_format_score = 0;
+  int current_surface_format_score = 0;
+  for (uint32_t i = 1; i < surface_format_count; ++i)
+  {
+    current_surface_format_score = 0;
+    
+    if (surface_formats[i].format == VK_FORMAT_B8G8R8A8_SRGB)
+      current_surface_format_score += 10;
+    if (surface_formats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+      current_surface_format_score += 10;
+
+    if (current_surface_format_score > best_surface_format_score)
+    {
+      best_surface_format_score = current_surface_format_score;
+      best_surface_format = &surface_formats[i];
+    }
+  }
+  _renderer->surface_format = *best_surface_format;
+
+  /** @note Pick present mode */
+  _renderer->surface_present_mode = VK_PRESENT_MODE_FIFO_KHR;
+  for (uint32_t i = 0; i < surface_present_mode_count; ++i)
+  {
+    if (surface_present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
+      _renderer->surface_present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+  }
+
+  /** @note Really weird implementation of clamp */
+  uint32_t min_width = _renderer->surface_capabilities.minImageExtent.width;
+  uint32_t max_width = _renderer->surface_capabilities.maxImageExtent.width;
+  uint32_t min_height = _renderer->surface_capabilities.minImageExtent.height;
+  uint32_t max_height = _renderer->surface_capabilities.maxImageExtent.height;
+  
+  _renderer->swapchain_extent.width =
+    (_renderer->surface_capabilities.currentExtent.width < min_width)
+      ? min_width
+      : _renderer->surface_capabilities.currentExtent.width;
+  
+  _renderer->swapchain_extent.width =
+    (_renderer->swapchain_extent.width > max_width)
+      ? max_width
+      : _renderer->swapchain_extent.width;
+  
+  _renderer->swapchain_extent.height =
+    (_renderer->surface_capabilities.currentExtent.height < min_height)
+      ? min_height
+      : _renderer->surface_capabilities.currentExtent.height;
+  
+  _renderer->swapchain_extent.height =
+    (_renderer->swapchain_extent.height > max_height)
+      ? max_height
+      : _renderer->swapchain_extent.height;
+  
+  /* Create swapchain */
+  _renderer->swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  _renderer->swapchain_create_info.surface = _renderer->surface;
+  _renderer->swapchain_create_info.minImageCount = _renderer->surface_capabilities.minImageCount + 1;
+  _renderer->swapchain_create_info.imageFormat = _renderer->surface_format.format;
+  _renderer->swapchain_create_info.imageColorSpace = _renderer->surface_format.colorSpace;
+  _renderer->swapchain_create_info.imageExtent = _renderer->swapchain_extent;
+  _renderer->swapchain_create_info.imageArrayLayers = 1;
+  _renderer->swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  _renderer->swapchain_create_info.preTransform = _renderer->surface_capabilities.currentTransform;
+  _renderer->swapchain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  _renderer->swapchain_create_info.presentMode = _renderer->surface_present_mode;
+  _renderer->swapchain_create_info.clipped = VK_TRUE;
+  _renderer->swapchain_create_info.oldSwapchain = VK_NULL_HANDLE; /* TODO(J0sueTM) */
+
+  /** @note Differ queue families from surface and presentation  */
+  uint32_t physical_device_queue_family_indices[2] =
+  {
+    _renderer->physical_device_queue_family_with_graphics_bit_index,
+    _renderer->physical_device_queue_family_with_surface_presentation_support_index
+  };
+  
+  if (_renderer->physical_device_queue_family_with_graphics_bit_index ==
+      _renderer->physical_device_queue_family_with_surface_presentation_support_index)
+    _renderer->swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  else
+  {
+    _renderer->swapchain_create_info.queueFamilyIndexCount = 2;
+    _renderer->swapchain_create_info.pQueueFamilyIndices = physical_device_queue_family_indices;
+    _renderer->swapchain_create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+  }
+
+  VkResult swapchain_creation_result = vkCreateSwapchainKHR(_renderer->logical_device,
+                                                            &_renderer->swapchain_create_info,
+                                                            NULL,
+                                                            &_renderer->swapchain);
+  if (!hnd_assert(swapchain_creation_result == VK_SUCCESS, "Could not create swapchain"))
+    return HND_NK;
+
+  hnd_get_swapchain_images(_renderer);
+
+  hnd_print_debug(HND_LOG, HND_CREATED("swapchain"), HND_SUCCESS);
+  return HND_OK;
+}
+
+int
+hnd_create_swapchain_image_views
+(
+  hnd_vulkan_renderer_t *_renderer
+)
+{
+  if (!hnd_assert(_renderer != NULL, HND_SYNTAX))
+    return HND_NK;
+
+  _renderer->swapchain_image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  _renderer->swapchain_image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  _renderer->swapchain_image_view_create_info.format = _renderer->surface_format.format;
+  _renderer->swapchain_image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+  _renderer->swapchain_image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+  _renderer->swapchain_image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+  _renderer->swapchain_image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+  _renderer->swapchain_image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  _renderer->swapchain_image_view_create_info.subresourceRange.baseMipLevel = 0;
+  _renderer->swapchain_image_view_create_info.subresourceRange.levelCount = 1;
+  _renderer->swapchain_image_view_create_info.subresourceRange.baseArrayLayer = 0;
+  _renderer->swapchain_image_view_create_info.subresourceRange.layerCount = 1;
+
+  /** @note Loops throughout retrieved images and create their views */
+  VkResult swapchain_image_view_creation_info;
+  for (uint32_t i = 0; i < _renderer->swapchain_image_count; ++i)
+  {
+    _renderer->swapchain_image_view_create_info.image = _renderer->swapchain_images[i];
+
+    swapchain_image_view_creation_info = vkCreateImageView(_renderer->logical_device,
+                                                           &_renderer->swapchain_image_view_create_info,
+                                                           NULL,
+                                                           &_renderer->swapchain_image_views[i]);
+    if (!hnd_assert(swapchain_image_view_creation_info == VK_SUCCESS, "Could not create image view"))
+      return HND_NK;
+  }
+
+  hnd_print_debug(HND_LOG, HND_CREATED("swapchain image views"), HND_SUCCESS);
   return HND_OK;
 }
 
@@ -463,7 +798,7 @@ hnd_clear_render
 void
 hnd_swap_renderer_buffers
 (
-  hnd_renderer_t *_renderer
+  hnd_vulkan_renderer_t *_renderer
 )
 {
   /* IMPLEMENT ME(JsueTM) */
