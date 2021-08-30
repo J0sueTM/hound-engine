@@ -18,15 +18,15 @@
  * @note: https://xcb.freedesktop.org/opengl/
  */
 
-#ifndef __HND_OPENGL_RENDERER_H__ 
-#define __HND_OPENGL_RENDERER_H__ 
+#ifndef __HND_LINUX_OPENGL_RENDERER_H__ 
+#define __HND_LINUX_OPENGL_RENDERER_H__ 
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
-#include "../video.h"
+#include "../../video.h"
 
 typedef struct hnd_opengl_renderer_t
 {
@@ -60,4 +60,4 @@ hnd_set_fb_configs
 }
 #endif /* __cplusplus */
 
-#endif /* __HND_OPENGL_RENDERER_H__ */
+#endif /* __HND_LINUX_OPENGL_RENDERER_H__ */

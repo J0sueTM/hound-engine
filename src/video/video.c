@@ -18,6 +18,7 @@
 
 #include "video.h"
 
+#ifdef HND_LINUX
 xcb_intern_atom_cookie_t
 hnd_intern_atom_cookie
 (
@@ -45,3 +46,4 @@ hnd_intern_atom
 
   return new_atom;
 }
+#endif /* HND_LINUX */

@@ -1,7 +1,7 @@
 /**
- * @file src/hound.h
+ * @file src/video/window/win32_window.h
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
- * @date August 08, 2021
+ * @date August 25, 2021
  *
  * Copyright (C) 2021 Josue Teodoro Moreira
  *  
@@ -16,22 +16,30 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __HND_H__
-#define __HND_H__
+#ifndef __HND_WIN32_WINDOW_H__
+#define __HND_WIN32_WINDOW_H__
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
-#include "core/core.h"
-#include "core/event/event.h"
-#include "video/video.h"
-#include "video/renderer/renderer.h"
-#include "video/window/window.h"
+/**
+ * @brief Linux window data.
+ */
+typedef struct hnd_win32_window_t
+{
+  char *title;
+  unsigned int border;
+  unsigned int left;
+  unsigned int top;
+  unsigned int width;
+  unsigned int height;
+  int running;
+} hnd_win32_window_t;
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __HND_H__  */
+#endif /* __HND_WIN32_WINDOW_H__ */

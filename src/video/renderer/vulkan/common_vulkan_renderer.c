@@ -1,5 +1,5 @@
 /**
- * @file src/video/renderer/vulkan_renderer.c
+ * @file src/video/renderer/vulkan/common_vulkan_renderer.c
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
  * @date August 08, 2021
  *
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-#include "renderer.h"
+#include "../renderer.h"
 
 #ifdef HND_DEBUG
 static VkResult
@@ -374,7 +374,11 @@ hnd_create_instance
   /* Instance extensions */
   _renderer->instance_create_info.enabledExtensionCount = HND_INSTANCE_EXTENSION_COUNT;
   _renderer->instance_extensions[0] = VK_KHR_SURFACE_EXTENSION_NAME;
+#ifdef HND_WIN23
+  _renderer->instance_extensions[1] = VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
+#else
   _renderer->instance_extensions[1] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
+#endif /* HND_WIN32 */
 
 #ifdef HND_DEBUG
   if (_renderer->are_validation_layers_supported)
@@ -531,67 +535,6 @@ hnd_create_logical_device
                    &_renderer->logical_device_graphics_queue);
 
   hnd_print_debug(HND_LOG, HND_CREATED("logical device"), HND_SUCCESS);
-  return HND_OK;
-}
-
-int
-hnd_create_surface
-(
-  hnd_vulkan_renderer_t *_renderer,
-  xcb_connection_t      *_connection,
-  xcb_window_t           _window
-)
-{
-  if (!hnd_assert(_renderer != NULL, HND_SYNTAX))
-    return HND_NK;
-
-  _renderer->xcb_surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-  _renderer->xcb_surface_create_info.connection = _connection;
-  _renderer->xcb_surface_create_info.window = _window;
-
-  VkResult xcb_surface_creation_result = vkCreateXcbSurfaceKHR(_renderer->instance,
-                                                               &_renderer->xcb_surface_create_info,
-                                                               NULL,
-                                                               &_renderer->surface);
-  if (!hnd_assert(xcb_surface_creation_result == VK_SUCCESS, "Could not create xcb surface"))
-    return HND_NK;
-
-
-  /** @note Picks chosen physical device's queue family with support for surface presentation */
-  uint32_t physical_device_queue_family_count;
-  vkGetPhysicalDeviceQueueFamilyProperties(_renderer->physical_device, &physical_device_queue_family_count, NULL);
-
-  /**
-   * @note If there're not enough queue families, then we're supposing that the chosen rendering capable family
-   * is the same as the presentation supported.
-   */
-  _renderer->physical_device_queue_family_with_surface_presentation_support_index =
-    _renderer->physical_device_queue_family_with_graphics_bit_index;
-  VkBool32 found_physical_device_queue_family_with_surface_presentation_support;
-  if (hnd_assert(physical_device_queue_family_count > 0, "Not enough queue families"))
-  {
-    for (uint32_t i = 0; i < physical_device_queue_family_count; ++i)
-    {
-      vkGetPhysicalDeviceSurfaceSupportKHR(_renderer->physical_device,
-                                           i,
-                                           _renderer->surface,
-                                           &found_physical_device_queue_family_with_surface_presentation_support);
-
-      if (found_physical_device_queue_family_with_surface_presentation_support == VK_TRUE)
-      {
-        _renderer->physical_device_queue_family_with_surface_presentation_support_index = i;
-
-        hnd_print_debug(HND_LOG, "Found queue family with surface presentation support", HND_SUCCESS);
-#ifdef HND_DEBUG
-        printf("       Code: %d\n", i);
-#endif /* HND_DEBUG */
-          
-        break;
-      }
-    }
-  }
-
-  hnd_print_debug(HND_LOG, HND_CREATED("xcb surface"), HND_SUCCESS);
   return HND_OK;
 }
 

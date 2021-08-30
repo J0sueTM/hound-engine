@@ -1,5 +1,5 @@
 /**
- * @file src/video/renderer/opengl_renderer.h
+ * @file src/video/renderer/opengl/linux_opengl_renderer.h
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
  * @date August 08, 2021
  *
@@ -16,15 +16,15 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __HND_VULKAN_RENDERER_H__
-#define __HND_VULKAN_RENDERER_H__
+#ifndef __HND_COMMON_VULKAN_RENDERER_H__
+#define __HND_COMMON_VULKAN_RENDERER_H__
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
-#include "../video.h"
+#include "../../video.h"
 
 #ifndef HND_PROJECT_NAME
 #define HND_PROJECT_NAME "Project made with Hound Engine"
@@ -176,14 +176,6 @@ hnd_create_logical_device
 );
 
 int
-hnd_create_surface
-(
-  hnd_vulkan_renderer_t *_renderer,
-  xcb_connection_t      *_connection,
-  xcb_window_t           _window
-);
-
-int
 hnd_create_swapchain
 (
   hnd_vulkan_renderer_t *_renderer
@@ -199,4 +191,4 @@ hnd_create_swapchain_image_views
 }
 #endif /* __cplusplus */
 
-#endif /* __HND_VULKAN_RENDERER_H__ */
+#endif /* __HND_COMMON_VULKAN_RENDERER_H__ */

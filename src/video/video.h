@@ -25,18 +25,28 @@ extern "C"
 #endif /* __cplusplus */
 
 #include "../core/core.h"
+
+#ifdef HND_LINUX
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 #include <xcb/xcb.h>
+#endif /* HND_WIN32 */
 
 #ifdef HND_USE_OPENGL
+#ifdef HND_WIN32
+#include <GL/glcorearb.h>
+#else
 #include <GL/glx.h>
 #include <GL/gl.h>
+#endif /* HND_WIN32 */
 #elif HND_USE_VULKAN
 #include <vulkan/vulkan.h>
+#ifdef HND_LINUX
 #include <vulkan/vulkan_xcb.h>
+#endif /* HND_LINUX */
 #endif /* HND_USE_OPENGL */
 
+#ifdef HND_LINUX
 /**
  * @brief Creates an atom cookie.
  *
@@ -66,6 +76,7 @@ hnd_intern_atom
   xcb_connection_t         *_connection,
   xcb_intern_atom_cookie_t  _cookie
 );
+#endif /* HND_LINUX */
 
 #ifdef __cplusplus
 }

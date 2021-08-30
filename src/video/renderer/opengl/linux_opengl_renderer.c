@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-#include "renderer.h"
+#include "../renderer.h"
 
 /**
  * @brief Frame buffer configs used on OpenGL context creation
@@ -92,19 +92,6 @@ hnd_end_renderer
   XCloseDisplay(_renderer->display);
   
   hnd_print_debug(HND_LOG, HND_ENDED("opengl renderer"), HND_SUCCESS);  
-}
-
-void
-hnd_clear_render
-(
-  float _red,
-  float _green,
-  float _blue,
-  float _alpha
-)
-{
-  glClearColor(_red, _green, _blue, _alpha);
-  glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void

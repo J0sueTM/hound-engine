@@ -1,7 +1,7 @@
 /**
- * @file src/hound.h
+ * @file src/video/window/win32_window.c
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
- * @date August 08, 2021
+ * @date August 25, 2021
  *
  * Copyright (C) 2021 Josue Teodoro Moreira
  *  
@@ -16,22 +16,38 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __HND_H__
-#define __HND_H__
+#include "window.h"
 
-#ifdef __cplusplus
-extern "C"
+hnd_win32_window_t *
+hnd_create_window
+(
+  const char   *_title,
+  unsigned int  _border,
+  unsigned int  _left,
+  unsigned int  _top,
+  unsigned int  _width,
+  unsigned int  _height
+)
 {
-#endif /* __cplusplus */
-
-#include "core/core.h"
-#include "core/event/event.h"
-#include "video/video.h"
-#include "video/renderer/renderer.h"
-#include "video/window/window.h"
-
-#ifdef __cplusplus
+  /* IMPLEMENT ME(J0sueTM) */
+  return NULL;
 }
-#endif /* __cplusplus */
 
-#endif /* __HND_H__  */
+void
+hnd_destroy_window
+(
+  hnd_win32_window_t *_window
+)
+{
+  /* IMPLEMENT ME(J0sueTM) */
+}
+
+void
+hnd_poll_events
+(
+  hnd_win32_window_t *_window,
+  hnd_event_t        *_event
+)
+{
+  /* IMPLEMENT ME(J0sueTM) */
+}

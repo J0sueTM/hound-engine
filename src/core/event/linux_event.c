@@ -1,7 +1,7 @@
 /**
- * @file src/hound.h
+ * @file src/core/event/linux_event.c
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
- * @date August 08, 2021
+ * @date August 04, 2021
  *
  * Copyright (C) 2021 Josue Teodoro Moreira
  *  
@@ -16,22 +16,21 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __HND_H__
-#define __HND_H__
+#include "event.h"
 
-#ifdef __cplusplus
-extern "C"
+void
+hnd_queue_key_event
+(
+  hnd_keyboard_key    *_key_history,
+  xcb_generic_event_t *_xcb_event
+)
 {
-#endif /* __cplusplus */
+  xcb_key_press_event_t *temp_key_event = (xcb_key_press_event_t *)_xcb_event;
+  
+  /* Iterates through the key history, moving each key backwards */
+  for (int i = 1; i < HND_MAX_KEYBOARD_KEY_HISTORY; ++i)
+    _key_history[i] = _key_history[i - 1];
 
-#include "core/core.h"
-#include "core/event/event.h"
-#include "video/video.h"
-#include "video/renderer/renderer.h"
-#include "video/window/window.h"
-
-#ifdef __cplusplus
+  /* Replaces the first with the new event */
+  _key_history[0] = temp_key_event->detail;
 }
-#endif /* __cplusplus */
-
-#endif /* __HND_H__  */

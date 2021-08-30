@@ -1,7 +1,7 @@
 /**
- * @file src/hound.h
+ * @file src/video/renderer/vulkan/linux_vulkan_renderer.h
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
- * @date August 08, 2021
+ * @date August 30, 2021
  *
  * Copyright (C) 2021 Josue Teodoro Moreira
  *  
@@ -16,22 +16,12 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __HND_H__
-#define __HND_H__
+#include "common_vulkan_renderer.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif /* __cplusplus */
-
-#include "core/core.h"
-#include "core/event/event.h"
-#include "video/video.h"
-#include "video/renderer/renderer.h"
-#include "video/window/window.h"
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#endif /* __HND_H__  */
+int
+hnd_create_surface
+(
+  hnd_vulkan_renderer_t *_renderer,
+  xcb_connection_t      *_connection,
+  xcb_window_t           _window
+);

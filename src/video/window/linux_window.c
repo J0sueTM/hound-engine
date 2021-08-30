@@ -1,5 +1,5 @@
 /**
- * @file src/video/window.c
+ * @file src/video/window/linux_window.c
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
  * @date August 08, 2021
  *
@@ -28,7 +28,7 @@
 static int
 hnd_connect_to_xcb
 (
-  hnd_window_t *_window
+  hnd_linux_window_t *_window
 )
 {
 #ifdef HND_USE_OPENGL
@@ -71,7 +71,7 @@ hnd_connect_to_xcb
 static void
 hnd_set_window_properties
 (
-  hnd_window_t *_window
+  hnd_linux_window_t *_window
 )
 {
   xcb_intern_atom_cookie_t utf8_string_cookie =
@@ -108,7 +108,7 @@ hnd_set_window_properties
                       &_window->wm_delete_window);
 }
 
-hnd_window_t *
+hnd_linux_window_t *
 hnd_create_window
 (
   const char   *_title,
@@ -119,7 +119,7 @@ hnd_create_window
   unsigned int  _height
 )
 {
-  hnd_window_t *new_window = malloc(sizeof(hnd_window_t));
+  hnd_linux_window_t *new_window = malloc(sizeof(hnd_linux_window_t));
   if (!hnd_assert(new_window != NULL, NULL))
     return NULL;
 
@@ -225,7 +225,7 @@ hnd_create_window
   }
 
   hnd_print_debug(HND_LOG, "Created OpenGL context", HND_SUCCESS);
-#else
+#elif HND_USE_VULKAN
   hnd_create_surface(&new_window->renderer, new_window->connection, new_window->id);
   hnd_create_swapchain(&new_window->renderer);
   hnd_create_swapchain_image_views(&new_window->renderer);
@@ -240,7 +240,7 @@ hnd_create_window
 void
 hnd_destroy_window
 (
-  hnd_window_t *_window
+  hnd_linux_window_t *_window
 )
 {
   if (!hnd_assert(_window != NULL, HND_SYNTAX))
@@ -261,8 +261,8 @@ hnd_destroy_window
 void
 hnd_poll_events
 (
-  hnd_window_t     *_window,
-  hnd_event_t      *_event
+  hnd_linux_window_t *_window,
+  hnd_event_t        *_event
 )
 {
   if (!hnd_assert(_window != NULL, HND_SYNTAX))

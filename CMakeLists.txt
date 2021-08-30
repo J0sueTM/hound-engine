@@ -25,55 +25,76 @@ set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
-project(Hound VERSION "0.0.1" LANGUAGES C)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/core.h.in
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/core.h)
-include_directories(
-  ${CMAKE_CURRENT_SOURCE_DIR}/src)
+project(Hound VERSION "0.1.0" LANGUAGES C)
 
-find_package(X11 REQUIRED)
+if (NOT WIN32)
+  find_package(X11 REQUIRED)
+endif ()
+
 if (HOUND_USE_OPENGL)
   find_package(OpenGL REQUIRED)
-  set(HOUND_LIBRARIES X11 X11-xcb ${X11_LIBRARIES} OpenGL::GL)
-  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -O2 -D HND_USE_OPENGL")
+  if (WIN32)
+    set(HOUND_LIBRARIES opengl32)
+  else ()
+    set(HOUND_LIBRARIES X11 X11-xcb ${X11_LIBRARIES} OpenGL::GL)
+  endif ()
+
   set(HOUND_BACKEND "opengl")
+  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -D HND_USE_OPENGL")
   
   message("-- Rendering with OpenGL")
-elseif (HOUND_USE_VULKAN)
+else ()
   find_package(Vulkan REQUIRED)
-  set(HOUND_LIBRARIES X11 ${X11_LIBRARIES} vulkan)
-  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -O2 -D HND_USE_VULKAN")
+  if (WIN32)
+    set(HOUND_LIBRARIES Vulkan::Vulkan)
+  else ()
+    set(HOUND_LIBRARIES X11 ${X11_LIBRARIES} vulkan)
+  endif ()
+
   set(HOUND_BACKEND "vulkan")
+  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -D HND_USE_VULKAN")
 
   message("-- Rendering with Vulkan")
-else ()
-  set(HOUND_LIBRARIES X11 ${X11_LIBRARIES})
-  set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -O2 -D HND_USE_SOFTWARE")
-  set(HOUND_BACKEND "software")
-
-  message("-- Rendering with Software")
 endif ()
 
 if (HOUND_DEBUG)
+  add_definitions("-g")
   set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} -D HND_DEBUG")
 else ()
-  set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} -D HND_RELEASE")
+  set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} -O3 -D HND_RELEASE")
 endif ()
 
+if (WIN32)
+  set(HOUND_OS "win32")
+  set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} -D HND_WIN32")
+  
+  message("-- Building for windows")
+else ()
+  set(HOUND_OS "linux")
+  set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} -D HND_LINUX")
+  
+  message("-- Bulding for linux")
+endif ()
+
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HOUND_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/event.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/${HOUND_OS}_event.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/video/video.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/window.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/renderer/${HOUND_BACKEND}_renderer.c)
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/window/${HOUND_OS}_window.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/renderer/${HOUND_BACKEND}/common_${HOUND_BACKEND}_renderer.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/renderer/${HOUND_BACKEND}/${HOUND_OS}_${HOUND_BACKEND}_renderer.c)
 
-set(HOUND_LINK_OPTIONS "-lxcb")
+if (NOT WIN32)
+  set(HOUND_LINK_OPTIONS "-lxcb")
+endif ()
 
 if (BUILD_SHARED_LIBS)
   set(HOUND_BUILD SHARED)
 
   message("-- Building shared libraries")
-elseif ()
+else ()
   set(HOUND_BUILD STATIC)
 
   message("-- Building static libraries")
@@ -86,7 +107,6 @@ add_definitions(${HOUND_COMPILE_DEFINITIONS})
 add_link_options(${HOUND_LINK_OPTIONS})
 
 if (HOUND_BUILD_TEST)
-  add_definitions("-g")
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test/)
 
   message("-- Building Hound's tests")

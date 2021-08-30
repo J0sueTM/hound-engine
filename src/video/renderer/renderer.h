@@ -1,5 +1,5 @@
 /**
- * @file src/video/renderer/opengl_renderer.h
+ * @file src/video/renderer/renderer.h
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
  * @date August 08, 2021
  *
@@ -19,19 +19,27 @@
 #ifndef __HND_RENDERER_H__
 #define __HND_RENDERER_H__
 
-#include "../../core/core.h"
-#include "../video.h"
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
+
+#include "../../core/core.h"
+#include "../video.h"
   
 #ifdef HND_USE_OPENGL
-#include "opengl_renderer.h"
+#ifdef HND_WIN32
+#include "opengl/win32_opengl_renderer.h"
+#else
+#include "opengl/linux_opengl_renderer.h"
+#endif /* HND_WIN32 */
 typedef hnd_opengl_renderer_t hnd_renderer_t;
-#elif HND_USE_VULKAN
-#include "vulkan_renderer.h"
+#else
+#ifdef HND_WIN32
+#include "vulkan/win32_vulkan_renderer.h"
+#else
+#include "vulkan/linux_vulkan_renderer.h"
+#endif /* HND_WIN32 */
 typedef hnd_vulkan_renderer_t hnd_renderer_t;
 #endif /* HND_USE_OPENGL */
 

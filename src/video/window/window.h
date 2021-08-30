@@ -24,45 +24,21 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-#include "../core/core.h"
-#include "../core/event/event.h"
-#include "video.h"
-#include "renderer/renderer.h"
+#include "../../core/core.h"
+#include "../../core/event/event.h"
+#include "../video.h"
+#include "../renderer/renderer.h"
 
+#ifdef HND_WIN32
+#include "win32_window.h"
+typedef hnd_win32_window_t hnd_window_t;
+#else
+#include "linux_window.h"
+typedef hnd_linux_window_t hnd_window_t;
+#endif /* HND_WIN32 */
+  
 /**
- * @brief window data.
- */
-typedef struct hnd_window_t
-{
-  char *title;
-  unsigned int border;
-  unsigned int left;
-  unsigned int top;
-  unsigned int width;
-  unsigned int height;
-  int running;
-
-  xcb_connection_t *connection;
-  xcb_screen_t *screen_data;
-#ifdef HND_USE_OPENGL
-  xcb_colormap_t colormap_id;
-#endif /* HND_USE_OPENGL */
-
-  xcb_window_t id;
-  uint32_t event_mask;
-  uint32_t value_mask;
-  uint32_t value_list[3];
-
-  xcb_atom_t utf8_string;
-  xcb_atom_t wm_name;
-  xcb_atom_t wm_protocols;
-  xcb_atom_t wm_delete_window;
-
-  hnd_renderer_t renderer;
-} hnd_window_t;
-
-/**
- * @brief Tries to connect to xorg server and creates a window
+ * @brief Creates a window.
  *
  * @note If the window style doesn't display the upper bar, the
  *       title won't be displayed as well.
