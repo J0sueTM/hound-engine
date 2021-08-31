@@ -43,6 +43,9 @@ extern "C"
  */
 typedef struct hnd_win32_event_t
 {
+  MSG message;
+  BOOL message_result;
+  
   /* keyboard */
   hnd_keyboard_key pressed_keys[HND_MAX_KEYBOARD_KEY_HISTORY];
   hnd_keyboard_key released_keys[HND_MAX_KEYBOARD_KEY_HISTORY];

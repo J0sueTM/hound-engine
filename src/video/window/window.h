@@ -44,7 +44,6 @@ typedef hnd_linux_window_t hnd_window_t;
  *       title won't be displayed as well.
  *
  * @param _title  Specifies the text to be displayed on the new window's upper bar.
- * @param _border Specifies the border's width.
  * @param _left   Specifies the distance from the left side of the screen to the upper
                   left corner of the window.
  * @param _top    Specifies the distance from the top of the screen to the upper left
@@ -58,7 +57,6 @@ hnd_window_t *
 hnd_create_window
 (
   const char   *_title,
-  unsigned int  _border,
   unsigned int  _left,
   unsigned int  _top,
   unsigned int  _width,

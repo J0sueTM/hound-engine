@@ -27,7 +27,7 @@ extern "C"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef _WIN32
+#ifdef HND_WIN32
 #include <windows.h>
 #endif /* _WIN32 */
 #include "debug.h"

@@ -24,21 +24,23 @@ main
   void
 )
 {
-  hnd_window_t *window = hnd_create_window("Hound Engine Window Test", 0, 100, 100, 800, 600);
+  hnd_window_t *window = hnd_create_window("Hound Engine Window Test", 100, 100, 800, 600);
 
   hnd_event_t event;
   while (window->running)
   {
-    hnd_clear_render(0.2f, 0.2f, 0.2f, 1.0f);
     hnd_poll_events(window, &event);
+//    hnd_clear_render(0.2f, 0.2f, 0.2f, 1.0f);
 
+    /*
     if (event.pressed_keys[0] == HND_KEY_ESC)
       window->running = HND_NK;
+    */
 
-    hnd_swap_renderer_buffers(&window->renderer);
+//    hnd_swap_renderer_buffers(&window->renderer);
   }
-
-  hnd_destroy_window(window);
   
-  return (0);
+  hnd_destroy_window(window);
+
+  return 0;
 }

@@ -34,10 +34,10 @@ extern "C"
 
 #ifdef HND_USE_OPENGL
 #ifdef HND_WIN32
-#include <GL/glcorearb.h>
-#else
-#include <GL/glx.h>
 #include <GL/gl.h>
+#else
+#include <GL/gl.h>
+#include <GL/glx.h>
 #endif /* HND_WIN32 */
 #elif HND_USE_VULKAN
 #include <vulkan/vulkan.h>

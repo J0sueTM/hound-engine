@@ -24,8 +24,12 @@ extern "C"
 {
 #endif /* __cplusplus */
 
+#include "../video.h"
+
+#define HND_WINDOW_RENDERER_PROPERTY_NAME "window_renderer"
+
 /**
- * @brief Linux window data.
+ * @brief Windows window data.
  */
 typedef struct hnd_win32_window_t
 {
@@ -36,6 +40,11 @@ typedef struct hnd_win32_window_t
   unsigned int width;
   unsigned int height;
   int running;
+
+  WNDCLASS class;
+  HWND handle;
+
+  hnd_renderer_t renderer;
 } hnd_win32_window_t;
 
 #ifdef __cplusplus

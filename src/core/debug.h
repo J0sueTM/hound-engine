@@ -22,11 +22,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <execinfo.h>
-
-#if defined(HND_DEBUG) && defined(HND_USE_VULKAN)
-#include <vulkan/vulkan.h>
-#endif /* HND_DEBUG && HND_USE_VULKAN */
 
 /* Default returns  */
 #define HND_OK 1

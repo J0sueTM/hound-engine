@@ -112,7 +112,6 @@ hnd_linux_window_t *
 hnd_create_window
 (
   const char   *_title,
-  unsigned int  _border,
   unsigned int  _left,
   unsigned int  _top,
   unsigned int  _width,
