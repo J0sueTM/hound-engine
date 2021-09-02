@@ -34,7 +34,6 @@ extern "C"
 
 #ifdef HND_USE_OPENGL
 #include <GL/gl.h>
-#include <GL/gl.h>
 #ifdef HND_LINUX
 #include <GL/glx.h>
 #endif /* HND_LINUX */
