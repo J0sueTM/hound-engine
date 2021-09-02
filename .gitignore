@@ -3,6 +3,7 @@ Session.vim
 warnings.log
 *#*
 .kdev4/*
+*.kdev4
 
 # Generated
 docs/*
