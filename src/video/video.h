@@ -33,12 +33,11 @@ extern "C"
 #endif /* HND_WIN32 */
 
 #ifdef HND_USE_OPENGL
-#ifdef HND_WIN32
 #include <GL/gl.h>
-#else
 #include <GL/gl.h>
+#ifdef HND_LINUX
 #include <GL/glx.h>
-#endif /* HND_WIN32 */
+#endif /* HND_LINUX */
 #elif HND_USE_VULKAN
 #include <vulkan/vulkan.h>
 #ifdef HND_LINUX

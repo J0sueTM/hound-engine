@@ -23,9 +23,9 @@
 
 typedef struct hnd_opengl_renderer_t
 {
+  HGLRC gl_context;
   int pixel_format;
   HDC device_context;
-  HGLRC gl_context;
 } hnd_opengl_renderer_t;
 
 #endif /* __HND_WIN32_OPENGL_RENDERER_H__ */

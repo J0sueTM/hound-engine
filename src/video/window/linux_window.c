@@ -126,7 +126,6 @@ hnd_create_window
     return NULL;
 
   new_window->title = (char *)_title;
-  new_window->border = _border;
   new_window->left = _left;
   new_window->top = _top;
   new_window->width = _width;
@@ -189,7 +188,7 @@ hnd_create_window
 #ifdef HND_USE_OPENGL
                     new_window->renderer.visual_id,
 #else
-                    new_window->screen_data->root_visual,
+                    else_window->screen_data->root_visual,
 #endif /* HND_USE_OPENGL */
                     new_window->value_mask,
                     new_window->value_list);

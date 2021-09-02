@@ -68,7 +68,7 @@ hnd_end_renderer
 );
 
 /**
- * @brief Repaints window.
+ * @brief Sets teh colour used to clear the window before redrawing.
  *
  * @param _red   Specifies the red channel.
  * @param _green Specifies the green channel.
@@ -76,12 +76,21 @@ hnd_end_renderer
  * @param _alpha Specifies the alpha channel.
  */
 void
-hnd_clear_render
+hnd_set_renderer_clear_color
 (
   float _red,
   float _green,
   float _blue,
   float _alpha
+);
+
+/**
+ * @brief Clears the window.
+ */
+void
+hnd_clear_render
+(
+  void
 );
 
 /**
@@ -93,6 +102,19 @@ void
 hnd_swap_renderer_buffers
 (
   hnd_renderer_t *_renderer
+);
+
+/**
+ * @brief Sets new rendereing area.
+ *
+ * @param _width  Specifies the width of the new viewport.
+ * @param _height Specifies the height of the new viewport.
+ */
+void
+hnd_resize_renderer_viewport
+(
+  unsigned int _width,
+  unsigned int _height
 );
 
 #ifdef __cplusplus

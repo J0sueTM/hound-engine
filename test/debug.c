@@ -1,7 +1,7 @@
 /**
- * @file src/video/renderer/opengl_renderer.c
+ * @file test/debug.c
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
- * @date August 30, 2021
+ * @date September 02, 2021
  *
  * Copyright (C) 2021 Josue Teodoro Moreira
  *  
@@ -16,38 +16,15 @@
  * GNU General Public License for more details.
  */
 
-#include "../renderer.h"
+#include "../src/hound.h"
 
-void
-hnd_set_renderer_clear_color
-(
-  float _red,
-  float _green,
-  float _blue,
-  float _alpha
-)
-{
-  glClearColor(_red, _green, _blue, _alpha);
-}
-
-void
-hnd_clear_render
+int
+main
 (
   void
 )
 {
-  glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void
-hnd_resize_renderer_viewport
-(
-  unsigned int _width,
-  unsigned int _height
-)
-{
-  if (_height == 0)
-    _height = 1;
-
-  glViewport(0, 0, _width, _height);
+  hnd_print_debug(HND_LOG, "Something went alright", HND_SUCCESS);
+  hnd_print_debug(HND_WARNING, "Something needs attention", HND_FAILURE);
+  hnd_print_debug(HND_ERROR, "Something went wrong", HND_FAILURE);
 }

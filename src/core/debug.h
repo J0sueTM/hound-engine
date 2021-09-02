@@ -20,8 +20,13 @@
 #define __HND_DEBUG_H__
 
 #include <stdio.h>
-#include <errno.h>
+#include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+
+#ifdef HND_WIN32
+#include <windows.h>
+#endif /* HND_WIN32 */
 
 /* Default returns  */
 #define HND_OK 1
@@ -39,7 +44,7 @@
 /* Reasons */
 #define HND_SUCCESS "Assertion succeded"
 #define HND_FAILURE "Assertion failed"
-#define HND_SYNTAX  "Syntax incorrect"
+#define HND_SYNTAX  "Incorrect syntax"
 
 void
 hnd_print_debug

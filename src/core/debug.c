@@ -26,6 +26,22 @@ hnd_print_debug
   const char *_reason
 )
 {
+  if (!strcmp(_mode, "[ERROR]:"))
+  {
+#ifdef WIN32
+    MessageBox(NULL, _message, "Hound Engine", MB_OK | MB_ICONERROR);
+
+    PostQuitMessage(1);
+#else
+    /* Runs zenity on a tty */
+    char error_command[63];
+    sprintf(error_command, "zenity --error --text=\"%s\" --title=\"Hound Engine\"", _message);
+    system(error_command);
+
+    exit(1);
+#endif /* WIN32 */
+  }
+  
   if (_message)
     printf("%s %s - %s.\n", _mode, _message, _reason);
   else

@@ -24,7 +24,7 @@ static PIXELFORMATDESCRIPTOR pixel_format_descriptor =
   1,
   PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
   PFD_TYPE_RGBA,
-  32,
+  16,
   0,
   0,
   0,
@@ -38,8 +38,8 @@ static PIXELFORMATDESCRIPTOR pixel_format_descriptor =
   0,
   0,
   0,
-  24,
-  8,
+  16,
+  0,
   0,
   PFD_MAIN_PLANE,
   0,
@@ -57,19 +57,20 @@ hnd_init_renderer
   if (!hnd_assert(_renderer != NULL, HND_SYNTAX))
     return HND_NK;
 
-  _renderer->pixel_format = ChoosePixelFormat(_renderer->device_context,
-                                              &pixel_format_descriptor);
-  if (!hnd_assert(SetPixelFormat(_renderer->device_context,
-                                 _renderer->pixel_format,
-                                 &pixel_format_descriptor),
-                  "Could not set pixel format"))
+  _renderer->pixel_format = ChoosePixelFormat(_renderer->device_context, &pixel_format_descriptor);
+  if (!hnd_assert(_renderer->pixel_format != 0, "Could not choose pixel format"))
+    return HND_NK;
+
+  if (!SetPixelFormat(_renderer->device_context, _renderer->pixel_format, &pixel_format_descriptor))
     return HND_NK;
 
   _renderer->gl_context = wglCreateContext(_renderer->device_context);
-  if (!hnd_assert(_renderer->gl_context != NULL, "Could not create context"))
+  if(!hnd_assert(_renderer->gl_context != NULL, "Could not create OpenGL context"))
     return HND_NK;
 
-  wglMakeCurrent(_renderer->device_context, _renderer->gl_context);
+  if (!hnd_assert(wglMakeCurrent(_renderer->device_context, _renderer->gl_context),
+                  "Could not make renderer context current"))
+    return HND_NK;
   
   hnd_print_debug(HND_LOG, HND_CREATED("renderer"), HND_SUCCESS);
   return HND_OK;
@@ -82,6 +83,7 @@ hnd_end_renderer
 )
 {
   wglMakeCurrent(NULL, NULL);
+  wglDeleteContext(_renderer->gl_context);
   
   hnd_print_debug(HND_LOG, HND_ENDED("renderer"), HND_SUCCESS);
 }
@@ -92,5 +94,5 @@ hnd_swap_renderer_buffers
   hnd_renderer_t *_renderer
 )
 {
-  /* IMPLEMENT ME(J0sueTM) */
+  SwapBuffers(_renderer->device_context);
 }

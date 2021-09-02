@@ -16,5 +16,8 @@
 
 cmake_minimum_required(VERSION 3.20)
 
+add_executable(debug ${CMAKE_CURRENT_SOURCE_DIR}/debug.c)
+target_link_libraries(debug Hound)
+
 add_executable(window ${CMAKE_CURRENT_SOURCE_DIR}/window.c)
 target_link_libraries(window Hound)

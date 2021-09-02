@@ -26,6 +26,7 @@ extern "C"
 
 #include "../video.h"
 
+#define HND_WINDOW_CLASS_NAME "hound_window"
 #define HND_WINDOW_RENDERER_PROPERTY_NAME "window_renderer"
 
 /**
@@ -34,7 +35,6 @@ extern "C"
 typedef struct hnd_win32_window_t
 {
   char *title;
-  unsigned int border;
   unsigned int left;
   unsigned int top;
   unsigned int width;
@@ -43,9 +43,20 @@ typedef struct hnd_win32_window_t
 
   WNDCLASS class;
   HWND handle;
+  DWORD style;
+  DWORD extended_style;
 
   hnd_renderer_t renderer;
 } hnd_win32_window_t;
+
+LRESULT CALLBACK
+hnd_window_proc
+(
+  HWND   _window,
+  UINT   _message,
+  WPARAM _wparam,
+  LPARAM _lparam
+);
 
 #ifdef __cplusplus
 }
