@@ -25,6 +25,7 @@ extern "C"
 #endif /* __cplusplus */
 
 #include "../video.h"
+#include "../renderer/renderer.h"
 
 #define HND_WINDOW_CLASS_NAME "hound_window"
 #define HND_WINDOW_RENDERER_PROPERTY_NAME "window_renderer"
@@ -39,6 +40,7 @@ typedef struct hnd_win32_window_t
   unsigned int top;
   unsigned int width;
   unsigned int height;
+  unsigned int decoration;
   int running;
 
   WNDCLASS class;

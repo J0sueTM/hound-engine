@@ -96,21 +96,6 @@ hnd_poll_events
 );
 
 /**
- * @brief Sets given window's fullscreen state.
- *
- * @param _window     Specifies the window to make fullscreen, or not.
- * @param _fullscreen Specifies whether the window should be fullscreen or not.
- *
- * @return Function state. HND_OK or HND_NK.
- */
-int
-hnd_set_window_fullscreen
-(
-  hnd_window_t *_window,
-  int           _fullscreen
-);
-
-/**
  * @brief Sets window decoration.
  *
  * @param _window     Specifies the window whose decoration should be changed.
@@ -123,6 +108,34 @@ hnd_set_window_decoration
 (
   hnd_window_t *_window,
   unsigned int  _decoration
+);
+
+/**
+ * @brief Sets a window's title.
+ *
+ * @param _window Specifies the window whose title should be setted.
+ * @param _title  Specifies the new title.
+ */
+void
+hnd_set_window_title
+(
+  hnd_window_t *_window,
+  char         *_title
+);
+  
+/**
+ * @brief Sets given window's fullscreen state.
+ *
+ * @param _window     Specifies the window to make fullscreen, or not.
+ * @param _fullscreen Specifies whether the window should be fullscreen or not.
+ *
+ * @return Function state. HND_OK or HND_NK.
+ */
+int
+hnd_set_window_fullscreen
+(
+  hnd_window_t *_window,
+  int           _fullscreen
 );
 
 #ifdef __cplusplus

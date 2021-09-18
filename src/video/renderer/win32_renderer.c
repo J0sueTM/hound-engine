@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-#include "../renderer.h"
+#include "renderer.h"
 
 static PIXELFORMATDESCRIPTOR pixel_format_descriptor =
 {

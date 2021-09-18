@@ -25,7 +25,8 @@ hnd_create_window
   unsigned int  _left,
   unsigned int  _top,
   unsigned int  _width,
-  unsigned int  _height
+  unsigned int  _height,
+  unsigned int  _decoration
 )
 {
   hnd_win32_window_t *new_window = malloc(sizeof(hnd_win32_window_t));
@@ -75,11 +76,9 @@ hnd_create_window
   if (!hnd_assert(new_window->handle != NULL, "Could not create window"))
     return NULL;
 
-#ifdef HND_USE_OPENGL
   new_window->renderer.device_context = GetDC(new_window->handle);
   if (!hnd_assert(new_window->renderer.device_context != NULL, "Could not get window's device context"))
     return NULL;
-#endif /* HND_USE_OPENGL */
 
   if (!hnd_init_renderer(&new_window->renderer))
     return NULL;
@@ -98,9 +97,7 @@ hnd_destroy_window
     return;
 
   hnd_end_renderer(&_window->renderer);
-#ifdef HND_USE_OPENGL
   ReleaseDC(_window->handle, _window->renderer.device_context);
-#endif /* HND_USE_OPENGL */
     
   DestroyWindow(_window->handle);
   UnregisterClass(HND_WINDOW_CLASS_NAME, GetModuleHandle(NULL));
@@ -166,4 +163,41 @@ hnd_window_proc
   }
 
   return 0;
+}
+
+int
+hnd_set_window_fullscreen
+(
+  hnd_window_t *_window,
+  int           _fullscreen
+)
+{
+  if (!hnd_assert(_window != NULL, HND_SYNTAX))
+    return HND_NK;
+
+  return HND_OK;
+}
+
+void
+hnd_set_window_title
+(
+  hnd_window_t *_window,
+  char         *_title
+)
+{
+  if (!hnd_assert(_window != NULL, HND_SYNTAX))
+    return;
+}
+
+int
+hnd_set_window_decoration
+(
+  hnd_window_t *_window,
+  unsigned int  _decoration
+)
+{
+  if (!hnd_assert(_window != NULL, HND_SYNTAX))
+    return HND_NK;
+
+  return HND_OK;
 }

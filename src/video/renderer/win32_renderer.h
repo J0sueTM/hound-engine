@@ -21,7 +21,7 @@
 
 #include "../video.h"
 
-typedef struct hnd_opengl_renderer_t
+typedef struct hnd_win32_renderer_t
 {
   HGLRC gl_context;
   int pixel_format;

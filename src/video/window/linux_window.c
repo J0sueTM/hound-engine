@@ -18,6 +18,14 @@
 
 #include "window.h"
 
+/**
+ * @brief Connects to xcb/xli.
+ *
+ * @param _window Specifies the currently being created window where most of
+ *                xcb/xlib data resides.
+ *
+ * @return The function state. HND_OK or HND_NK.
+ */
 static int
 hnd_connect_to_xcb
 (
@@ -44,8 +52,13 @@ hnd_connect_to_xcb
   return HND_OK;
 }
 
+/**
+ * @brief Gets window's state atoms.
+ *
+ * @param _window Specifies the window to get atoms from.
+ */
 static void
-hnd_set_window_properties
+hnd_get_window_atoms
 (
   hnd_linux_window_t *_window
 )
@@ -79,16 +92,6 @@ hnd_set_window_properties
                       32,
                       1,
                       &_window->wm_delete_window->atom);
-
-  /* @note Sets the window title */
-  xcb_change_property(_window->connection,
-                      XCB_PROP_MODE_REPLACE,
-                      _window->id,
-                      XCB_ATOM_WM_NAME,
-                      XCB_ATOM_STRING,
-                      8,
-                      strlen(_window->title),
-                      _window->title);
 }
 
 hnd_linux_window_t *
@@ -162,7 +165,7 @@ hnd_create_window
                     new_window->value_mask,
                     new_window->value_list);
 
-  hnd_set_window_properties(new_window);
+  hnd_get_window_atoms(new_window);
   hnd_set_window_decoration(new_window, _decoration);
 
   xcb_map_window(new_window->connection, new_window->id);
@@ -256,23 +259,6 @@ hnd_poll_events
 }
 
 int
-hnd_set_window_fullscreen
-(
-  hnd_linux_window_t *_window,
-  int                 _fullscreen
-)
-{
-  if (!hnd_assert(_window != NULL, HND_SYNTAX))
-    return HND_NK;
-
-  _window->fullscreen = _fullscreen;
-
-  /* @todo implement me */
-
-  return HND_OK;
-}
-
-int
 hnd_set_window_decoration
 (
   hnd_linux_window_t *_window,
@@ -286,5 +272,47 @@ hnd_set_window_decoration
 
   /* @todo Handle decoration flags */
     
+  return HND_OK;
+}
+
+void
+hnd_set_window_title
+(
+  hnd_window_t *_window,
+  char         *_title
+)
+{
+  if (!hnd_assert(_window != NULL, HND_SYNTAX))
+    return;
+
+  _window->title = _title;
+  
+  /* @note Sets the window's title */
+  xcb_change_property(_window->connection,
+                      XCB_PROP_MODE_REPLACE,
+                      _window->id,
+                      XCB_ATOM_WM_NAME,
+                      XCB_ATOM_STRING,
+                      8,
+                      strlen(_window->title),
+                      _window->title);
+
+  xcb_flush(_window->connection);
+}
+
+int
+hnd_set_window_fullscreen
+(
+  hnd_linux_window_t *_window,
+  int                 _fullscreen
+)
+{
+  if (!hnd_assert(_window != NULL, HND_SYNTAX))
+    return HND_NK;
+
+  _window->fullscreen = _fullscreen;
+
+  /* @todo implement me */
+
   return HND_OK;
 }
