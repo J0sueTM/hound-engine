@@ -24,7 +24,12 @@ main
   void
 )
 {
-  hnd_window_t *window = hnd_create_window("Hound Engine Window Test", 100, 100, 800, 600);
+  hnd_window_t *window = hnd_create_window("Hound Engine Window Test",
+                                           0,
+                                           0,
+                                           800,
+                                           600,
+                                           HND_WINDOW_DECORATION_ALL);
 
   hnd_set_renderer_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
 
@@ -36,10 +41,10 @@ main
 
     if (event.pressed_keys[0] == HND_KEY_ESC)
       window->running = HND_NK;
-
+  
     hnd_swap_renderer_buffers(&window->renderer);
   }
-  
+
   hnd_destroy_window(window);
 
   return 0;

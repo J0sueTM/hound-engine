@@ -1,5 +1,5 @@
 /**
- * @file src/video/renderer/opengl_renderer.c
+ * @file src/video/renderer/opengl/win32_opengl_renderer.h
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
  * @date August 30, 2021
  *
@@ -16,38 +16,16 @@
  * GNU General Public License for more details.
  */
 
-#include "../renderer.h"
+#ifndef __HND_WIN32_OPENGL_RENDERER_H__
+#define __HND_WIN32_OPENGL_RENDERER_H__
 
-void
-hnd_set_renderer_clear_color
-(
-  float _red,
-  float _green,
-  float _blue,
-  float _alpha
-)
+#include "../video.h"
+
+typedef struct hnd_opengl_renderer_t
 {
-  glClearColor(_red, _green, _blue, _alpha);
-}
+  HGLRC gl_context;
+  int pixel_format;
+  HDC device_context;
+} hnd_win32_renderer_t;
 
-void
-hnd_clear_render
-(
-  void
-)
-{
-  glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void
-hnd_resize_renderer_viewport
-(
-  unsigned int _width,
-  unsigned int _height
-)
-{
-  if (_height == 0)
-    _height = 1;
-
-  glViewport(0, 0, _width, _height);
-}
+#endif /* __HND_WIN32_OPENGL_RENDERER_H__ */

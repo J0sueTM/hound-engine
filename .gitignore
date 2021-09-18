@@ -4,6 +4,7 @@ warnings.log
 *#*
 .kdev4/*
 *.kdev4
+.undodir/*
 
 # Generated
 docs/*

@@ -36,20 +36,27 @@ typedef hnd_win32_window_t hnd_window_t;
 #include "linux_window.h"
 typedef hnd_linux_window_t hnd_window_t;
 #endif /* HND_WIN32 */
-  
+
+#define HND_WINDOW_DECORATION_NONE     0x000
+#define HND_WINDOW_DECORATION_MINIMIZE 0x001
+#define HND_WINDOW_DECORATION_MAXIMIZE 0x010
+#define HND_WINDOW_DECORATION_CLOSE    0x100
+#define HND_WINDOW_DECORATION_ALL      0x111
+ 
 /**
  * @brief Creates a window.
  *
  * @note If the window style doesn't display the upper bar, the
- *       title won't be displayed as well.
+ *       title and the buttons won't be displayed as well.
  *
- * @param _title  Specifies the text to be displayed on the new window's upper bar.
- * @param _left   Specifies the distance from the left side of the screen to the upper
-                  left corner of the window.
- * @param _top    Specifies the distance from the top of the screen to the upper left
-                  corner of the window.
- * @param _width  Specifies the window's width.
- * @param _height Specifies the window's height.
+ * @param _title      Specifies the text to be displayed on the new window's upper bar.
+ * @param _left       Specifies the distance from the left side of the screen to the upper
+ *                    left corner of the window.
+ * @param _top        Specifies the distance from the top of the screen to the upper left
+ *                    corner of the window.
+ * @param _width      Specifies the window's width.
+ * @param _height     Specifies the window's height.
+ * @param _decoration Specifies the window's decoration flags.
  *
  * @return The created window.
  */
@@ -60,7 +67,8 @@ hnd_create_window
   unsigned int  _left,
   unsigned int  _top,
   unsigned int  _width,
-  unsigned int  _height
+  unsigned int  _height,
+  unsigned int  _decoration
 );
 
 /**
@@ -85,6 +93,36 @@ hnd_poll_events
 (
   hnd_window_t *_window,
   hnd_event_t  *_event
+);
+
+/**
+ * @brief Sets given window's fullscreen state.
+ *
+ * @param _window     Specifies the window to make fullscreen, or not.
+ * @param _fullscreen Specifies whether the window should be fullscreen or not.
+ *
+ * @return Function state. HND_OK or HND_NK.
+ */
+int
+hnd_set_window_fullscreen
+(
+  hnd_window_t *_window,
+  int           _fullscreen
+);
+
+/**
+ * @brief Sets window decoration.
+ *
+ * @param _window     Specifies the window whose decoration should be changed.
+ * @param _decoration Specifies the decoration flags that should change.
+ *
+ * @return Function state. HND_OK or HND_NK.
+ */
+int
+hnd_set_window_decoration
+(
+  hnd_window_t *_window,
+  unsigned int  _decoration
 );
 
 #ifdef __cplusplus

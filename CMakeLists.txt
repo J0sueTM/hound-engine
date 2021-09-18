@@ -16,9 +16,13 @@
 
 cmake_minimum_required(VERSION 3.20)
 
+# Directories
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 message("-- Created lib directory")
 
+# Compiler
 if (WIN32 AND NOT MSVC)
   set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
   set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
@@ -27,69 +31,43 @@ else ()
   set(CMAKE_CXX_COMPILER g++)
 endif ()
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-
+# Project
 project(Hound VERSION "0.1.0" LANGUAGES C)
 
-if (NOT WIN32)
+# Libraries
+find_package(OpenGL REQUIRED)
+if (WIN32)
   find_package(X11 REQUIRED)
-endif ()
 
-if (HOUND_USE_VULKAN)
-  find_package(Vulkan REQUIRED)
-  if (WIN32)
-    set(HOUND_LIBRARIES Vulkan::Vulkan)
-  else ()
-    set(HOUND_LIBRARIES X11 ${X11_LIBRARIES} vulkan)
-  endif ()
-
-  set(HOUND_BACKEND "vulkan")
-  if (MSVC)
-    set(HOUND_COMPILE_DEFINITIONS "/D HND_USE_VULKAN")
-  else ()
-    set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -D HND_USE_VULKAN")
-  endif ()
-
-  message("-- Rendering with Vulkan")
+  set(HOUND_LIBRARIES opengl32)
+  set(HOUND_LINK_OPTIONS "-lgdi32")
 else ()
-  find_package(OpenGL REQUIRED)
-  if (WIN32)
-    set(HOUND_LIBRARIES opengl32)
-  else ()
-    set(HOUND_LIBRARIES X11 X11-xcb ${X11_LIBRARIES} OpenGL::GL)
-  endif ()
-
-  set(HOUND_BACKEND "opengl")
-  if (MSVC)
-    set(HOUND_COMPILE_DEFINITIONS "/D HND_USE_OPENGL")
-  else ()
-    set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic -D HND_USE_OPENGL")
-  endif ()
-  
-  message("-- Rendering with OpenGL")
+  set(HOUND_LIBRARIES X11 X11-xcb ${X11_LIBRARIES} OpenGL::GL)
+  set(HOUND_LINK_OPTIONS "-lxcb")
 endif ()
 
+# Build configuration
+set(HOUND_COMPILE_DEFINITIONS "-Wall -Werror -pedantic")
 if (HOUND_DEBUG)
   if (NOT MSVC)
     add_definitions("-g")
   endif ()
 
   if (MSVC)
-    set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} /D HND_DEBUG")
+    set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} /DEBUG /D HND_DEBUG")
   else ()
     set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} -D HND_DEBUG")
   endif ()
+
+  message("-- Building debug configuration")
 else ()
-  if (MSVC)
-    set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} /D HND_RELEASE")
-  else ()
-    set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} -D HND_RELEASE")
-  endif ()
+  message("-- Building release configuration")
 endif ()
 
+# OS
 if (WIN32)
   set(HOUND_OS "win32")
+
   if (MSVC)
     set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} /D HND_WIN32")
   else ()
@@ -100,25 +78,19 @@ if (WIN32)
 else ()
   set(HOUND_OS "linux")
   set(HOUND_COMPILE_DEFINITIONS "${HOUND_COMPILE_DEFINITIONS} -D HND_LINUX")
-  
+
   message("-- Bulding for linux")
 endif ()
 
+# Source
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HOUND_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/${HOUND_OS}_event.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/video.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/video/window/${HOUND_OS}_window.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/renderer/${HOUND_BACKEND}/common_${HOUND_BACKEND}_renderer.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/renderer/${HOUND_BACKEND}/${HOUND_OS}_${HOUND_BACKEND}_renderer.c)
-
-if (WIN32)
-  set(HOUND_LINK_OPTIONS "-lgdi32")
-else ()
-  set(HOUND_LINK_OPTIONS "-lxcb")
-endif ()
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/renderer/common_renderer.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video/renderer/${HOUND_OS}_renderer.c)
 
 if (BUILD_SHARED_LIBS)
   set(HOUND_BUILD SHARED)
@@ -130,12 +102,14 @@ else ()
   message("-- Building static libraries")
 endif ()
 
+# Library
 add_library(Hound ${HOUND_BUILD} ${HOUND_SRC})
 target_link_libraries(Hound ${HOUND_LIBRARIES})
 
 add_definitions(${HOUND_COMPILE_DEFINITIONS})
 add_link_options(${HOUND_LINK_OPTIONS})
 
+# Tests
 if (HOUND_BUILD_TEST)
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test/)
 

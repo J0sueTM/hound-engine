@@ -16,11 +16,8 @@
  * GNU General Public License for more details.
  */
 
-#include "../renderer.h"
+#include "renderer.h"
 
-/**
- * @brief Frame buffer configs used on OpenGL context creation
- */
 static int fb_configs[] =
 {
   GLX_X_RENDERABLE,   True,
@@ -39,23 +36,31 @@ static int fb_configs[] =
   None
 };
 
-int
+/**
+ * @brief Gets and sets frame buffer config matching current screen's attributes.
+ *
+ * @param _connection Specifies the connection where fb data resides and
+ *                    should be updated.
+ *
+ * @return Function state. HND_OK or HND_NK.
+ */
+static int
 hnd_set_fb_configs
 (
-  hnd_opengl_renderer_t *_renderer
+  hnd_linux_renderer_t *_renderer
 )
 {
   _renderer->fb_configs = glXChooseFBConfig(_renderer->display,
                                             _renderer->default_screen,
                                             fb_configs,
                                             &_renderer->fb_config_count);
-  if (!hnd_assert(_renderer->fb_configs != 0, "Could not get frame buffer configs"))
+  if (!hnd_assert(_renderer->fb_configs != 0, "Could not choose frame buffer configs"))
     return HND_NK;
 
   /* Get the first of frame buffer config list */
   _renderer->current_fb_config = *(_renderer->fb_configs);
   glXGetFBConfigAttrib(_renderer->display, _renderer->current_fb_config, GLX_VISUAL_ID, &_renderer->visual_id);
-  
+
   return HND_OK;
 }
 
@@ -67,7 +72,10 @@ hnd_init_renderer
 {
   if (!hnd_assert(_renderer != NULL, HND_SYNTAX))
     return HND_NK;
-
+  
+  if (!hnd_set_fb_configs(_renderer))
+    return HND_NK;
+  
   _renderer->gl_context = glXCreateNewContext(_renderer->display,
                                               _renderer->current_fb_config,
                                               GLX_RGBA_TYPE,

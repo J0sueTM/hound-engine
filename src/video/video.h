@@ -32,48 +32,9 @@ extern "C"
 #include <xcb/xcb.h>
 #endif /* HND_WIN32 */
 
-#ifdef HND_USE_OPENGL
 #include <GL/gl.h>
 #ifdef HND_LINUX
 #include <GL/glx.h>
-#endif /* HND_LINUX */
-#elif HND_USE_VULKAN
-#include <vulkan/vulkan.h>
-#ifdef HND_LINUX
-#include <vulkan/vulkan_xcb.h>
-#endif /* HND_LINUX */
-#endif /* HND_USE_OPENGL */
-
-#ifdef HND_LINUX
-/**
- * @brief Creates an atom cookie.
- *
- * @param _connection Specifies the Xorg/Xcb server connection.
- * @param _string     Specifies the new atom's id name.
- *
- * @return The created atom cookie.
- */
-xcb_intern_atom_cookie_t
-hnd_intern_atom_cookie
-(
-  xcb_connection_t *_connection,
-  const char       *_string
-);
-
-/**
- * @brief Creates an atom.
- *
- * @param _connection Specifies the Xorg/Xcb server connection.
- * @param _cookie     Specifies the atom cookie the new atom should be based off.
- *
- * @return The created atom.
- */
-xcb_atom_t
-hnd_intern_atom
-(
-  xcb_connection_t         *_connection,
-  xcb_intern_atom_cookie_t  _cookie
-);
 #endif /* HND_LINUX */
 
 #ifdef __cplusplus

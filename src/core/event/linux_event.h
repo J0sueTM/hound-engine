@@ -25,8 +25,9 @@ extern "C"
 #endif /* __cplusplus */
   
 #include "../../core/core.h"
-#include "../../video/video.h"
 #include "keyboard.h"
+#include <X11/X.h>
+#include <X11/Xlib.h>
 
 /*
  * You can choose the size of the key history

@@ -1,5 +1,5 @@
 /**
- * @file src/video/renderer/vulkan/linux_vulkan_renderer.h
+ * @file src/video/renderer/opengl_renderer.c
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
  * @date August 30, 2021
  *
@@ -16,12 +16,38 @@
  * GNU General Public License for more details.
  */
 
-#include "common_vulkan_renderer.h"
+#include "renderer.h"
 
-int
-hnd_create_surface
+void
+hnd_set_renderer_clear_color
 (
-  hnd_vulkan_renderer_t *_renderer,
-  xcb_connection_t      *_connection,
-  xcb_window_t           _window
-);
+  float _red,
+  float _green,
+  float _blue,
+  float _alpha
+)
+{
+  glClearColor(_red, _green, _blue, _alpha);
+}
+
+void
+hnd_clear_render
+(
+  void
+)
+{
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void
+hnd_resize_renderer_viewport
+(
+  unsigned int _width,
+  unsigned int _height
+)
+{
+  if (_height == 0)
+    _height = 1;
+
+  glViewport(0, 0, _width, _height);
+}

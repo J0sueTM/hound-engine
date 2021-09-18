@@ -26,22 +26,14 @@ extern "C"
 
 #include "../../core/core.h"
 #include "../video.h"
-  
-#ifdef HND_USE_OPENGL
+ 
 #ifdef HND_WIN32
-#include "opengl/win32_opengl_renderer.h"
+#include "win32_renderer.h"
+typedef hnd_win32_renderer_t hnd_renderer_t;
 #else
-#include "opengl/linux_opengl_renderer.h"
+#include "linux_renderer.h"
+typedef hnd_linux_renderer_t hnd_renderer_t;
 #endif /* HND_WIN32 */
-typedef hnd_opengl_renderer_t hnd_renderer_t;
-#else
-#ifdef HND_WIN32
-#include "vulkan/win32_vulkan_renderer.h"
-#else
-#include "vulkan/linux_vulkan_renderer.h"
-#endif /* HND_WIN32 */
-typedef hnd_vulkan_renderer_t hnd_renderer_t;
-#endif /* HND_USE_OPENGL */
 
 /**
  * @brief Initialises given renderer.

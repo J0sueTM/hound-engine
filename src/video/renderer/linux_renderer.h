@@ -26,35 +26,21 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-#include "../../video.h"
+#include "../video.h"
 
-typedef struct hnd_opengl_renderer_t
+typedef struct hnd_linux_renderer_t
 {
   Display *display;
   GLXFBConfig *fb_configs;
   GLXFBConfig current_fb_config;
   int fb_config_count;
-  
+
   int visual_id;
   int default_screen;
-  
+
   GLXContext gl_context;
   GLXWindow gl_window;
-} hnd_opengl_renderer_t;
-
-/**
- * @brief Gets and sets frame buffer config matching current screen's attributes.
- *
- * @param _connection Specifies the connection where fb data resides and
- *                    should be updated.
- *
- * @return Function state. HND_OK or HND_NK.
- */
-int
-hnd_set_fb_configs
-(
-  hnd_opengl_renderer_t *_renderer
-);
+} hnd_linux_renderer_t;
 
 #ifdef __cplusplus
 }
