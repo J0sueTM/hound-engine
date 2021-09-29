@@ -37,11 +37,11 @@ project(Hound VERSION "0.1.0" LANGUAGES C)
 # Libraries
 find_package(OpenGL REQUIRED)
 if (WIN32)
-  find_package(X11 REQUIRED)
-
   set(HOUND_LIBRARIES opengl32)
   set(HOUND_LINK_OPTIONS "-lgdi32")
 else ()
+  find_package(X11 REQUIRED)
+
   set(HOUND_LIBRARIES X11 X11-xcb ${X11_LIBRARIES} OpenGL::GL)
   set(HOUND_LINK_OPTIONS "-lxcb")
 endif ()

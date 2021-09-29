@@ -21,3 +21,6 @@ target_link_libraries(debug Hound)
 
 add_executable(window ${CMAKE_CURRENT_SOURCE_DIR}/window.c)
 target_link_libraries(window Hound)
+
+add_executable(event ${CMAKE_CURRENT_SOURCE_DIR}/event.c)
+target_link_libraries(event Hound)

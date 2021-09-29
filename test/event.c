@@ -1,7 +1,7 @@
 /**
- * @file test/window.c
+ * @file test/event/event.c
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
- * @date July 27, 2021
+ * @date September 29, 2021
  *
  * Copyright (C) 2021 Josue Teodoro Moreira
  *  
@@ -24,7 +24,7 @@ main
   void
 )
 {
-  hnd_window_t *window = hnd_create_window("Hound Engine Window Test",
+  hnd_window_t *window = hnd_create_window("Hound Engine Keyboard Event Test",
                                            0,
                                            0,
                                            800,
@@ -39,9 +39,20 @@ main
     hnd_clear_render();
     hnd_poll_events(window, &event);
 
-    if (event.keyboard.pressed_key == HND_KEY_ESC)
-      window->running = HND_NK;
-  
+    if (event.type == HND_EVENT_KEY_PRESS)
+    {
+      printf("Key pressed: %d\n", event.keyboard.pressed_key);
+
+      if (event.keyboard.pressed_key == HND_KEY_ESC)
+        window->running = HND_NK;
+    }
+    else if (event.type == HND_EVENT_KEY_RELEASE)
+      printf("Key released: %d\n", event.keyboard.released_key);
+    else if (event.type == HND_EVENT_MOUSE_BUTTON_PRESS)
+      printf("Button pressed: %d\n", event.mouse.pressed_button);
+    else if (event.type == HND_EVENT_MOUSE_BUTTON_RELEASE)
+      printf("Button released: %d\n", event.mouse.released_button);
+
     hnd_swap_renderer_buffers(&window->renderer);
   }
 

@@ -15,139 +15,128 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
  * GNU General Public License for more details.
  *
- * @note Taken from mostly from GLFW's documentation:
- * https://www.glfw.org/docs/latest/group__keys.html#ga50391730e9d7112ad4fd42d0bd1597c1
+ * @note These keycodes were extracted by running xev.
+ * @note This will map every keyboard mapping to us qwerty.
  */
 
-#ifndef HND_KEYBOARD_H
-#define HND_KEYBOARD_H
+#ifndef __HND_KEYBOARD_H__ 
+#define __HND_KEYBOARD_H__ 
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
-/**
- * Keyboard map based on us qwerty
- *
- * @note Run xev.
- *
- * @note I use dvorak, but this helps when developing games
- * since we won't need to worry since qwerty is mainstream.
- */
-typedef enum hnd_keyboard_key
-{
-  HOUND_KEY_UNKNOWN = 0,
+#define HND_KEY_UNKNOWN 0
 
-  /* function row */
-  HND_KEY_F1  = 67,
-  HND_KEY_F2  = 68,
-  HND_KEY_F3  = 69,
-  HND_KEY_F4  = 70,
-  HND_KEY_F5  = 71,
-  HND_KEY_F6  = 72,
-  HND_KEY_F7  = 73,
-  HND_KEY_F8  = 74,
-  HND_KEY_F9  = 75,
-  HND_KEY_F10 = 76,
-  HND_KEY_F11 = 95,
-  HND_KEY_F12 = 96,
+/* @note Function row */
+#define HND_KEY_F1  67
+#define HND_KEY_F2  68
+#define HND_KEY_F3  69
+#define HND_KEY_F4  70
+#define HND_KEY_F5  71
+#define HND_KEY_F6  72
+#define HND_KEY_F7  73
+#define HND_KEY_F8  74
+#define HND_KEY_F9  75
+#define HND_KEY_F10 76
+#define HND_KEY_F11 95
+#define HND_KEY_F12 96
 
-  /* number row */
-  HND_KEY_1     = 10,
-  HND_KEY_2     = 11,
-  HND_KEY_3     = 12,
-  HND_KEY_4     = 13,
-  HND_KEY_5     = 14,
-  HND_KEY_6     = 15,
-  HND_KEY_7     = 16,
-  HND_KEY_8     = 17,
-  HND_KEY_9     = 18,
-  HND_KEY_0     = 19,
-  HND_KEY_MINUS = 20,
-  HND_KEY_EQUAL = 21,
+/* @note Number row */
+#define HND_KEY_1     10
+#define HND_KEY_2     11
+#define HND_KEY_3     12
+#define HND_KEY_4     13
+#define HND_KEY_5     14
+#define HND_KEY_6     15
+#define HND_KEY_7     16
+#define HND_KEY_8     17
+#define HND_KEY_9     18
+#define HND_KEY_0     19
+#define HND_KEY_MINUS 20
+#define HND_KEY_EQUAL 21
 
-  /* upper row */
-  HND_KEY_Q = 24,
-  HND_KEY_W = 25,
-  HND_KEY_E = 26,
-  HND_KEY_R = 27,
-  HND_KEY_T = 28,
-  HND_KEY_Y = 29,
-  HND_KEY_U = 30,
-  HND_KEY_I = 31,
-  HND_KEY_O = 32,
-  HND_KEY_P = 33,
+/* @note Upper row */
+#define HND_KEY_Q 24
+#define HND_KEY_W 25
+#define HND_KEY_E 26
+#define HND_KEY_R 27
+#define HND_KEY_T 28
+#define HND_KEY_Y 29
+#define HND_KEY_U 30
+#define HND_KEY_I 31
+#define HND_KEY_O 32
+#define HND_KEY_P 33
 
-  /* home row */
-  HND_KEY_A         = 38,
-  HND_KEY_S         = 39,
-  HND_KEY_D         = 40,
-  HND_KEY_F         = 41,
-  HND_KEY_G         = 42,
-  HND_KEY_H         = 43,
-  HND_KEY_J         = 44,
-  HND_KEY_K         = 45,
-  HND_KEY_L         = 46,
-  HND_KEY_SEMICOLON = 46,
-  
-  /* lower row */
-  HND_KEY_Z      = 52,
-  HND_KEY_X      = 53,
-  HND_KEY_C      = 54,
-  HND_KEY_V      = 55,
-  HND_KEY_B      = 56,
-  HND_KEY_N      = 57,
-  HND_KEY_M      = 58,
-  HND_KEY_COMMA  = 59,
-  HND_KEY_PERIOD = 60,
-  HND_KEY_SLASH  = 61,
+/* @note Home row */
+#define HND_KEY_A         38
+#define HND_KEY_S         39
+#define HND_KEY_D         40
+#define HND_KEY_F         41
+#define HND_KEY_G         42
+#define HND_KEY_H         43
+#define HND_KEY_J         44
+#define HND_KEY_K         45
+#define HND_KEY_L         46
+#define HND_KEY_SEMICOLON 46
 
-  /* left column */
-  HND_KEY_ESC          = 9,
-  HND_KEY_APOSTROPHE   = 48,
-  HND_KEY_TAB          = 23,
-  HND_KEY_CAPS         = 66,
-  HND_KEY_LEFT_SHIFT   = 50,
-  HND_KEY_LEFT_CONTROL = 37,
+/* @note Lower row */
+#define HND_KEY_Z      52
+#define HND_KEY_X      53
+#define HND_KEY_C      54
+#define HND_KEY_V      55
+#define HND_KEY_B      56
+#define HND_KEY_N      57
+#define HND_KEY_M      58
+#define HND_KEY_COMMA  59
+#define HND_KEY_PERIOD 60
+#define HND_KEY_SLASH  61
 
-  /* right column */
-  HND_KEY_BACKSPACE = 22,
-  HND_KEY_BACKSLASH = 52,
-  HND_KEY_ENTER = 36,
-  HND_KEY_RIGHT_SHIFT = 62,
-  HND_KEY_RIGHT_CONTROL = 105,
+/* @note Left column */
+#define HND_KEY_ESC          9
+#define HND_KEY_APOSTROPHE   48
+#define HND_KEY_TAB          23
+#define HND_KEY_CAPS         66
+#define HND_KEY_LEFT_SHIFT   50
+#define HND_KEY_LEFT_CONTROL 37
 
-  /* bottom row */
-  HND_KEY_LEFT_SUPER = 133,
-  HND_KEY_LEFT_META = 64,
-  HND_KEY_SPACE = 64,
-  HND_KEY_RIGHT_META = 108,
-  HND_KEY_MENU = 135,
-  
-  /* arrow keys */
-  HND_KEY_UP    = 111,
-  HND_KEY_LEFT  = 113,
-  HND_KEY_RIGHT = 114,
-  HND_KEY_DOWN  = 116,
+/* @note Right column */
+#define HND_KEY_BACKSPACE     22
+#define HND_KEY_BACKSLASH     52
+#define HND_KEY_ENTER         36
+#define HND_KEY_RIGHT_SHIFT   62
+#define HND_KEY_RIGHT_CONTROL 105
 
-  /* with shift */
-  HND_KEY_LEFT_BRACKET = 34,
-  HND_KEY_RIGHT_BRACKET = 35,
-  HND_KEY_GRAVE_ACCENT = 49,
+/* @note Bottom row */
+#define HND_KEY_LEFT_SUPER 133
+#define HND_KEY_LEFT_META  64
+#define HND_KEY_SPACE      64
+#define HND_KEY_RIGHT_META 108
+#define HND_KEY_MENU       135
 
-  /* etc */
-  HND_KEY_PAUSE     = 127,
-  HND_KEY_INSERT    = 118,
-  HND_KEY_DELETE    = 119,
-  HND_KEY_PAGE_UP   = 112,
-  HND_KEY_PAGE_DOWN = 117,
-  HND_KEY_HOME      = 110,
-  HND_KEY_END       = 115
-} hnd_keyboard_key;
+/* @note Arrow keys */
+#define HND_KEY_UP    111
+#define HND_KEY_LEFT  113
+#define HND_KEY_RIGHT 114
+#define HND_KEY_DOWN  116
+
+/* @note With shift */
+#define HND_KEY_LEFT_BRACKET  34
+#define HND_KEY_RIGHT_BRACKET 35
+#define HND_KEY_GRAVE_ACCENT  49
+
+/* @note Etc */
+#define HND_KEY_PAUSE     127
+#define HND_KEY_INSERT    118
+#define HND_KEY_DELETE    119
+#define HND_KEY_PAGE_UP   112
+#define HND_KEY_PAGE_DOWN 117
+#define HND_KEY_HOME      110
+#define HND_KEY_END       115
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* HND_KEYBOARD_H */
+#endif /* __HND_KEYBOARD_H__ */

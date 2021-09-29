@@ -35,6 +35,16 @@ typedef hnd_win32_event_t hnd_event_t;
 typedef hnd_linux_event_t hnd_event_t;
 #endif /* HND_WIN32 */
 
+#define HND_EVENT_NONE 0
+
+/* @note Keyboard */
+#define HND_EVENT_KEY_PRESS   1
+#define HND_EVENT_KEY_RELEASE 2
+
+/* @note Mouse */
+#define HND_EVENT_MOUSE_BUTTON_PRESS   3
+#define HND_EVENT_MOUSE_BUTTON_RELEASE 4
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

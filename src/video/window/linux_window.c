@@ -227,24 +227,76 @@ hnd_poll_events
   if (!hnd_assert(_event != NULL, HND_SYNTAX))
     return;
 
+  _event->type = HND_EVENT_NONE;
+  
+  _event->keyboard.pressed_key = HND_KEY_UNKNOWN;
+  _event->keyboard.released_key = HND_KEY_UNKNOWN;
+
   _event->xcb_event = xcb_poll_for_event(_window->connection);
   if (!_event->xcb_event)
-    return;
+  {
+    _event->type = HND_EVENT_NONE;
 
+    return;
+  }
+ 
   switch (_event->xcb_event->response_type & 0x7f)
   {
+  case XCB_CREATE_WINDOW:
+    _event->type = HND_EVENT_NONE;
+    
+    _event->keyboard.pressed_key = HND_KEY_UNKNOWN;
+    _event->keyboard.released_key = HND_KEY_UNKNOWN;
+    
+    break;
   case XCB_EXPOSE:
     xcb_flush(_window->connection);
     
     break;
   case XCB_KEY_PRESS:
-    hnd_queue_key_event(_event->pressed_keys, _event->xcb_event);
+  {
+    _event->type = HND_EVENT_KEY_PRESS;
 
-    break;
+    xcb_key_press_event_t *temp_key_press_event = (xcb_key_press_event_t *)_event->xcb_event;
+    _event->keyboard.pressed_key = temp_key_press_event->detail;
+
+  } break;
   case XCB_KEY_RELEASE:
-    hnd_queue_key_event(_event->released_keys, _event->xcb_event);
+  {
+    _event->type = HND_EVENT_KEY_RELEASE;
+
+    /**
+     * @bug I don't think it would be considered a bug, but, depending on the situation, this can
+     * be intriguing:
+     *
+     * On some keyboards, it doesn't begin spamming the currently being pressed key. Instead, it presses
+     * and releases it, and then begin spamming the pressed key. You probably saw this sometimes, when typing,
+     * where you would click a key, and it would insert it, wait a couple milisseconds, and then begin spamming
+     * that key.
+     * This being saind, xcb gets this milisseconds before beginning to spam as a key release event, while in reality,
+     * I'm just pressing a key.
+     * 
+     */
+    xcb_key_release_event_t *temp_key_release_event = (xcb_key_release_event_t *)_event->xcb_event;
+    _event->keyboard.released_key = temp_key_release_event->detail;
   
-    break;
+  } break;
+  case XCB_BUTTON_PRESS:
+  {
+    _event->type = HND_EVENT_MOUSE_BUTTON_PRESS;
+
+    xcb_button_press_event_t *temp_button_press_event = (xcb_button_press_event_t *)_event->xcb_event;
+    _event->mouse.pressed_button = temp_button_press_event->detail;
+
+  } break;
+  case XCB_BUTTON_RELEASE:
+  {
+    _event->type = HND_EVENT_MOUSE_BUTTON_RELEASE;
+
+    xcb_button_release_event_t *temp_button_release_event = (xcb_button_release_event_t *)_event->xcb_event;
+    _event->mouse.released_button = temp_button_release_event->detail;
+
+  } break;
   case XCB_CLIENT_MESSAGE:
   {
     xcb_client_message_event_t *temp_client_message_event = (xcb_client_message_event_t *)_event->xcb_event;

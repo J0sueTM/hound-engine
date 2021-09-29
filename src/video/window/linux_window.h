@@ -14,6 +14,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
  * GNU General Public License for more details.
+ *
+ * @bug On xfce4, the window takes some time to close/end after taking it through
+ * different workspaces.
  */
 
 #ifndef __HND_LINUX_WINDOW_H__

@@ -1,21 +1,23 @@
 * Houng Engine TODO list
 
-* Doing:
+** Detailed:
+
+   Working on mouse events for linux.
   
 ** Core:
-   
+
    - *Debug* [4/4] [100%]
      - [X] Log
      - [X] Warning
      - [X] Error
      - [X] Assertion [2/2] [100%]
        - [X] Text
-       - [X] Window
+       - [X] Window Popup
          
-   - *Events* [1/3] [33%]
-     - [X] Keyboard [1/1] [100%]
-       - [X] History
+   - *Events* [1/4] [25%]
+     - [X] Keyboard
      - [ ] Mouse
+     - [ ] Window
      - [ ] Joystick
 
 ** Video:
@@ -26,16 +28,13 @@
        - [ ] Fullscreen
        - [ ] Position: Center
        - [ ] Size: Monitor
-       - [ ] Decoration [0/3] [0%]
-         - [ ] Border
-         - [ ] Title bar
-         - [ ] Buttons [0/3] [0%]
-           - [ ] Maximize
-           - [ ] Minimize
-           - [ ] Close
+       - [ ] Buttons [0/3] [0%]
+         - [ ] Maximize
+         - [ ] Minimize
+         - [ ] Close
          
    - *Backend Integration* [1/2] [50%]
      - [X] OpenGL
-     - [ ] Vulkan
+     - [ ] Vulkan (Future work)
          
 ** Audio:

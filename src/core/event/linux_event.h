@@ -26,39 +26,27 @@ extern "C"
   
 #include "../../core/core.h"
 #include "keyboard.h"
-#include <X11/X.h>
-#include <X11/Xlib.h>
+#include "mouse.h"
+#include <xcb/xcb.h>
 
-/*
- * You can choose the size of the key history
- *
- * However, beware that Hound loops through all of them.
-*/
-#ifndef HND_MAX_KEYBOARD_KEY_HISTORY
-#define HND_MAX_KEYBOARD_KEY_HISTORY 50
-#endif /* HND_MAX_KEYBOARD_KEY_HISTORY */
-
-/**
- * @brief Keeps track of current events and their states.
- */
 typedef struct hnd_linux_event_t
 {
+  unsigned int type;
   xcb_generic_event_t *xcb_event;
 
-  /* keyboard */
-  hnd_keyboard_key pressed_keys[HND_MAX_KEYBOARD_KEY_HISTORY];
-  hnd_keyboard_key released_keys[HND_MAX_KEYBOARD_KEY_HISTORY];
-  unsigned int pressed_key_history_count;
-  unsigned int released_key_history_count;
+  struct
+  {
+    unsigned int pressed_key;
+    unsigned int released_key;
+  } keyboard;
+
+  struct
+  {
+    unsigned int pressed_button;
+    unsigned int released_button;
+  } mouse;
 } hnd_linux_event_t;
-
-void
-hnd_queue_key_event
-(
-  hnd_keyboard_key    *_key_history,
-  xcb_generic_event_t *_xcb_event
-);
-
+  
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
