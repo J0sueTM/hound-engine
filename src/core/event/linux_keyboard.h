@@ -1,5 +1,5 @@
 /**
- * @file src/core/event/keyboard.h
+ * @file src/core/event/linux_keyboard.h
  * @author Josue Teodoro Moreira <teodoro.josue@protonmail.ch>
  * @date August 04, 2021
  *
@@ -19,8 +19,8 @@
  * @note This will map every keyboard mapping to us qwerty.
  */
 
-#ifndef __HND_KEYBOARD_H__ 
-#define __HND_KEYBOARD_H__ 
+#ifndef __HND_LINUX_KEYBOARD_H__
+#define __HND_LINUX_KEYBOARD_H__
 
 #ifdef __cplusplus
 extern "C"
@@ -139,4 +139,4 @@ extern "C"
 }
 #endif /* __cplusplus */
 
-#endif /* __HND_KEYBOARD_H__ */
+#endif /* __HND_LINUX_KEYBOARD_H__ */

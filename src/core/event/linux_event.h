@@ -25,7 +25,7 @@ extern "C"
 #endif /* __cplusplus */
   
 #include "../../core/core.h"
-#include "keyboard.h"
+#include "linux_keyboard.h"
 #include "mouse.h"
 #include <xcb/xcb.h>
 

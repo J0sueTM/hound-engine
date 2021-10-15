@@ -24,14 +24,16 @@ extern "C"
 {
 #endif /* __cplusplus */
 
+#include "../../core/event/event.h"
 #include "../video.h"
 #include "../renderer/renderer.h"
 
 #define HND_WINDOW_CLASS_NAME "hound_window"
-#define HND_WINDOW_RENDERER_PROPERTY_NAME "window_renderer"
+#define HND_WINDOW_DATA_PROPERTY "WINDOW_DATA_PROPERTY"
+#define HND_WINDOW_EVENT_PROPERTY "WINDOW_EVENT_PROPERTY"
 
 /**
- * @brief Windows window data.
+ * @brief Win32 window data.
  */
 typedef struct hnd_win32_window_t
 {
@@ -41,6 +43,7 @@ typedef struct hnd_win32_window_t
   unsigned int width;
   unsigned int height;
   unsigned int decoration;
+  unsigned int fullscreen;
   int running;
 
   WNDCLASS class;
@@ -51,6 +54,24 @@ typedef struct hnd_win32_window_t
   hnd_renderer_t renderer;
 } hnd_win32_window_t;
 
+/**
+ * @brief Adds a property for the event so it can be called on the default callback.
+ *
+ * @param _window Specifies the window with the win32 handle.
+ * @param _event  Specifies the event struct to bind.
+ */
+int
+hnd_set_window_event
+(
+  hnd_win32_window_t *_window,
+  hnd_event_t        *_event
+);
+
+/**
+ * @brief Win32 default callback, called for event handling.
+ *
+ * @note https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms633573(v=vs.85)
+ */
 LRESULT CALLBACK
 hnd_window_proc
 (

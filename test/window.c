@@ -34,6 +34,10 @@ main
   hnd_set_renderer_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
 
   hnd_event_t event;
+#ifdef HND_WIN32
+  hnd_set_window_event(window, &event);
+#endif /* HND_WIN32 */
+
   while (window->running)
   {
     hnd_clear_render();

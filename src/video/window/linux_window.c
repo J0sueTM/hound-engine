@@ -266,16 +266,13 @@ hnd_poll_events
     _event->type = HND_EVENT_KEY_RELEASE;
 
     /**
-     * @bug I don't think it would be considered a bug, but, depending on the situation, this can
+     * @bug I don't think it should be considered a bug, but, depending on the situation, this can
      * be intriguing:
      *
-     * On some keyboards, it doesn't begin spamming the currently being pressed key. Instead, it presses
+     * On some keyboards, the KEY_PRESS or KEY_RELEASE event doesn't happen forever. Instead, it presses
      * and releases it, and then begin spamming the pressed key. You probably saw this sometimes, when typing,
      * where you would click a key, and it would insert it, wait a couple milisseconds, and then begin spamming
      * that key.
-     * This being saind, xcb gets this milisseconds before beginning to spam as a key release event, while in reality,
-     * I'm just pressing a key.
-     * 
      */
     xcb_key_release_event_t *temp_key_release_event = (xcb_key_release_event_t *)_event->xcb_event;
     _event->keyboard.released_key = temp_key_release_event->detail;

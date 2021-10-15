@@ -69,13 +69,26 @@ hnd_create_window
                                       new_window->top,
                                       new_window->width,
                                       new_window->height,
-                                      NULL,
+                                      GetDesktopWindow(),
                                       NULL,
                                       new_window->class.hInstance,
                                       NULL);
   if (!hnd_assert(new_window->handle != NULL, "Could not create window"))
     return NULL;
 
+  /* @note Sets the window struct as a property assigned to it's window->handle so we can retrieve it
+   * later on functions like hnd_window_proc.
+   *
+   * @note There's an issue with SetProp and GetProp, where GetProp was returning an error when it can't validate
+   * HWND. Turned out I was running GetProp too early. In any case, GetProp should run after the window was created,
+   * so it doesn't break on the first call to hnd_window_proc, since the first one would be WM_CREATE, when the
+   * following code haven't even run yet (assigning the new property).
+   */
+  if (!hnd_assert(SetProp(new_window->handle, HND_WINDOW_DATA_PROPERTY, new_window),
+                  "Could not set window data as property"))
+    return NULL;
+
+  /* @note Ends renderer binding: Device context */
   new_window->renderer.device_context = GetDC(new_window->handle);
   if (!hnd_assert(new_window->renderer.device_context != NULL, "Could not get window's device context"))
     return NULL;
@@ -98,11 +111,29 @@ hnd_destroy_window
 
   hnd_end_renderer(&_window->renderer);
   ReleaseDC(_window->handle, _window->renderer.device_context);
-    
-  DestroyWindow(_window->handle);
+
+  RemovePropA(_window->handle, HND_WINDOW_DATA_PROPERTY);
   UnregisterClass(HND_WINDOW_CLASS_NAME, GetModuleHandle(NULL));
 
   hnd_print_debug(HND_LOG, HND_ENDED("window"), HND_SUCCESS);
+}
+
+int
+hnd_set_window_event
+(
+  hnd_win32_window_t *_window,
+  hnd_event_t        *_event
+)
+{
+  if (!hnd_assert(_window != NULL, HND_SYNTAX))
+    return HND_NK;
+  if (!hnd_assert(_event != NULL, HND_SYNTAX))
+    return HND_NK;
+
+  if (!hnd_assert(SetProp(_window->handle, HND_WINDOW_EVENT_PROPERTY, _event), "Could not set event as property"))
+    return HND_NK;
+
+  return HND_OK;
 }
 
 void
@@ -120,7 +151,7 @@ hnd_poll_events
   _event->message_result = GetMessage(&_event->message, NULL, 0, 0);
   if (_event->message_result < 0)
   {
-    _window->running = HND_NK;
+    CloseWindow(_window->handle);
     
     return;
   }
@@ -144,18 +175,32 @@ hnd_window_proc
     break;
   case WM_SIZE:
     hnd_resize_renderer_viewport(LOWORD(_lparam), HIWORD(_wparam));
-    
+
     break;
   case WM_DESTROY:
-    PostQuitMessage(0);
-    
-    break;
+  {
+    hnd_win32_window_t *window = (hnd_win32_window_t *)GetProp(_window, HND_WINDOW_DATA_PROPERTY);
+    window->running = HND_NK;
+
+  } break;
   case WM_CLOSE:
-    PostQuitMessage(0);
+    DestroyWindow(_window);
     
     break;
-  case WM_ACTIVATEAPP:
-    break;
+  case WM_KEYDOWN:
+  {
+    hnd_event_t *event = (hnd_event_t *)GetProp(_window, HND_WINDOW_EVENT_PROPERTY);
+    event->type = HND_EVENT_KEY_PRESS;
+    event->keyboard.pressed_key = _wparam;
+
+  } break;
+  case WM_KEYUP:
+  {
+    hnd_event_t *event = (hnd_event_t *)GetProp(_window, HND_WINDOW_EVENT_PROPERTY);
+    event->type = HND_EVENT_KEY_RELEASE;
+    event->keyboard.released_key = _wparam;
+
+  } break;
   default:
     return DefWindowProc(_window, _message, _wparam, _lparam);
     
@@ -168,12 +213,16 @@ hnd_window_proc
 int
 hnd_set_window_fullscreen
 (
-  hnd_window_t *_window,
-  int           _fullscreen
+  hnd_win32_window_t *_window,
+  int                 _fullscreen
 )
 {
   if (!hnd_assert(_window != NULL, HND_SYNTAX))
     return HND_NK;
+
+  _window->fullscreen = _fullscreen;
+
+  /* @todo IMPLEMENT ME */
 
   return HND_OK;
 }
@@ -181,23 +230,31 @@ hnd_set_window_fullscreen
 void
 hnd_set_window_title
 (
-  hnd_window_t *_window,
-  char         *_title
+  hnd_win32_window_t *_window,
+  char               *_title
 )
 {
   if (!hnd_assert(_window != NULL, HND_SYNTAX))
     return;
+
+  _window->title = _title;
+
+  /* @todo IMPLEMENT ME */
 }
 
 int
 hnd_set_window_decoration
 (
-  hnd_window_t *_window,
-  unsigned int  _decoration
+  hnd_win32_window_t *_window,
+  unsigned int        _decoration
 )
 {
   if (!hnd_assert(_window != NULL, HND_SYNTAX))
     return HND_NK;
+
+  _window->decoration = _decoration;
+
+  /* @todo IMPLEMENT ME */
 
   return HND_OK;
 }

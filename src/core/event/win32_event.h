@@ -23,24 +23,30 @@
 extern "C"
 {
 #endif /* __cplusplus */
-
   
 #include "../../core/core.h"
-#include "keyboard.h"
+#include "win32_keyboard.h"
 
 /**
  * @brief Keeps track of current events and their states.
  */
 typedef struct hnd_win32_event_t
 {
+  unsigned int type;
   MSG message;
   BOOL message_result;
 
   struct
   {
-    hnd_keyboard_key pressed_key;
-    hnd_keyboard_key released_key;
+    unsigned int pressed_key;
+    unsigned int released_key;
   } keyboard;
+
+  struct
+  {
+    unsigned int pressed_button;
+    unsigned int released_button;
+  } mouse;
 } hnd_win32_event_t;
 
 #ifdef __cplusplus
