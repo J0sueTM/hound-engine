@@ -17,8 +17,8 @@
        - [X] Text
        - [X] Window Popup
          
-   - *Events* [0/4] [0%]
-     - [ ] Keyboard
+   - *Events* [1/4] [25%]
+     - [X] Keyboard
      - [ ] Mouse
      - [ ] Window
      - [ ] Joystick
@@ -39,5 +39,5 @@
    - *Backend Integration* [1/2] [50%]
      - [X] OpenGL
      - [ ] Vulkan (Future)
-         
+
 ** Audio:
