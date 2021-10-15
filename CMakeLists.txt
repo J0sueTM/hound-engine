@@ -87,6 +87,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(HOUND_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/src/core/debug.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/util/math/vector.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/core/event/${HOUND_OS}_event.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/video/window/${HOUND_OS}_window.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/video/renderer/common_renderer.c

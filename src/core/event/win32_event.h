@@ -26,7 +26,7 @@ extern "C"
   
 #include "../../core/core.h"
 #include "win32_keyboard.h"
-
+#include "mouse.h"
 /**
  * @brief Keeps track of current events and their states.
  */

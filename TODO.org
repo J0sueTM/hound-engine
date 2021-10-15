@@ -2,10 +2,7 @@
 
 ** Detailed:
 
-   Rewriting event handling.
-   On win32, the main loop for handling events is a callback, which means that I can't use my own parameters,
-   in a self written function. So, I need to find a way to make the event struct part of the window. Maybe, passing it on the
-   window creation itself.
+   Working on 2d vectors.
   
 ** Core:
 
@@ -26,7 +23,6 @@
 ** Video:
    
    - *Window* [1/2] [50%]
-     - [X] Creation
      - [ ] Flags [0/3] [0%]
        - [ ] Fullscreen
        - [ ] Position: Center
@@ -39,5 +35,13 @@
    - *Backend Integration* [1/2] [50%]
      - [X] OpenGL
      - [ ] Vulkan (Future)
+
+** Util:
+
+   - *Vector* [4/4] [100%]
+     - [X] Addition
+     - [X] Subtraction
+     - [X] Multiplication
+     - [X] Division
 
 ** Audio:

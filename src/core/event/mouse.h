@@ -16,8 +16,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __HND_MOUSE_H__ 
-#define __HND_MOUSE_H__ 
+#ifndef __HND_LINUX_MOUSE_H__ 
+#define __HND_LINUX_MOUSE_H__ 
 
 #ifdef __cplusplus
 extern "C"
@@ -26,11 +26,11 @@ extern "C"
 
 #define HND_MOUSE_BUTTON_UNKNOWN 0
 #define HND_MOUSE_BUTTON_LEFT    1
-#define HND_MOUSE_BUTTON_RIGHT   2
-#define HND_MOUSE_BUTTON_MIDDLE  3
+#define HND_MOUSE_BUTTON_MIDDLE  2
+#define HND_MOUSE_BUTTON_RIGHT   3
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* HND_MOUSE_H */
+#endif /* HND_LINUX_MOUSE_H */
