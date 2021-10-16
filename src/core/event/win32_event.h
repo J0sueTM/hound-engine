@@ -51,7 +51,6 @@ typedef struct hnd_win32_event_t
     hnd_vector position;
     hnd_vector pressed_position;
     hnd_vector released_position;
-    hnd_vector scrolled_position;
   } mouse;
 } hnd_win32_event_t;
 

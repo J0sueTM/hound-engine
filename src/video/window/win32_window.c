@@ -112,7 +112,7 @@ hnd_destroy_window
   hnd_end_renderer(&_window->renderer);
   ReleaseDC(_window->handle, _window->renderer.device_context);
 
-  RemovePropA(_window->handle, HND_WINDOW_DATA_PROPERTY);
+  RemoveProp(_window->handle, HND_WINDOW_DATA_PROPERTY);
   UnregisterClass(HND_WINDOW_CLASS_NAME, GetModuleHandle(NULL));
 
   hnd_print_debug(HND_LOG, HND_ENDED("window"), HND_SUCCESS);
@@ -265,11 +265,13 @@ hnd_window_proc
   {
     /* @note https://stackoverflow.com/questions/9245303/rawinput-how-to-get-mouse-wheel-data */
     hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
-    temp_event->type = ((short)(unsigned short)HIWORD(_wparam) < 0)
-      ? HND_EVENT_MOUSE_WHEEL_SCROLL_UP
-      : HND_EVENT_MOUSE_WHEEL_SCROLL_DOWN;
-    temp_event->mouse.scrolled_position[0] = (float)LOWORD(_lparam); 
-    temp_event->mouse.scrolled_position[1] = (float)HIWORD(_lparam);
+    temp_event->type = HND_EVENT_MOUSE_BUTTON_PRESS;
+    temp_event->mouse.pressed_button =
+      ((short)(unsigned short)HIWORD(_wparam) < 0)
+        ? HND_MOUSE_BUTTON_MIDDLE_DOWN
+        : HND_MOUSE_BUTTON_MIDDLE_UP;
+    temp_event->mouse.pressed_position[0] = (float)LOWORD(_lparam); 
+    temp_event->mouse.pressed_position[1] = (float)HIWORD(_lparam);
 
   } break;
   default:
