@@ -32,6 +32,8 @@ extern "C"
 #endif /* _WIN32 */
 #include "debug.h"
 
+#include "../util/math/vector.h"
+
 #define HND_NAME "Hound"
 #define HND_VERSION  "0.1.0"
 #define HND_VERSION_MAJOR 0

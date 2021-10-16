@@ -25,10 +25,8 @@ main
 )
 {
   hnd_window_t *window = hnd_create_window("Hound Engine Event Test",
-                                           0,
-                                           0,
-                                           800,
-                                           600,
+                                           (hnd_vector){ 0, 0 },
+                                           (hnd_vector){ 800, 600 },
                                            HND_WINDOW_DECORATION_ALL);
 
   hnd_set_renderer_clear_color(0.2f, 0.2f, 0.2f, 1.0f);
@@ -43,19 +41,23 @@ main
     hnd_clear_render();
     hnd_poll_events(window, &event);
 
-    if (event.type == HND_EVENT_KEY_PRESS)
-    {
-      printf("Key pressed: %d\n", event.keyboard.pressed_key);
-
-      if (event.keyboard.pressed_key == HND_KEY_ESC)
-        window->running = HND_NK;
-    }
-    else if (event.type == HND_EVENT_KEY_RELEASE)
-      printf("Key released: %d\n", event.keyboard.released_key);
-    else if (event.type == HND_EVENT_MOUSE_BUTTON_PRESS)
-      printf("Button pressed: %d\n", event.mouse.pressed_button);
-    else if (event.type == HND_EVENT_MOUSE_BUTTON_RELEASE)
-      printf("Button released: %d\n", event.mouse.released_button);
+      if (event.type == HND_EVENT_KEY_PRESS)
+        printf("Key pressed: %d\n", event.keyboard.pressed_key);
+      else if (event.type == HND_EVENT_KEY_RELEASE)
+        printf("Key released: %d\n", event.keyboard.released_key);
+      else if (event.type == HND_EVENT_MOUSE_BUTTON_PRESS)
+      {
+        if (event.mouse.pressed_button == HND_MOUSE_BUTTON_MIDDLE_UP)
+          printf("Mouse wheel scrolled up at: %.2f - %.2f\n", event.mouse.pressed_position[0], event.mouse.pressed_position[1]);
+        else if (event.mouse.pressed_button == HND_MOUSE_BUTTON_MIDDLE_DOWN)
+          printf("Mouse wheel scrolled down at: %.2f - %.2f\n", event.mouse.pressed_position[0], event.mouse.pressed_position[1]);
+        else
+          printf("Button %d pressed at: %.2f - %.2f\n", event.mouse.pressed_button, event.mouse.pressed_position[0], event.mouse.pressed_position[1]);
+      }
+      else if (event.type == HND_EVENT_MOUSE_BUTTON_RELEASE)
+        printf("Button %d released at: %.2f - %.2f\n", event.mouse.released_button, event.mouse.released_position[0], event.mouse.released_position[1]);
+      else if (event.type == HND_EVENT_MOUSE_MOVE)
+        printf("Mouse moved at: %.2f : %.2f\n", event.mouse.position[0], event.mouse.position[1]);
 
     hnd_swap_renderer_buffers(&window->renderer);
   }

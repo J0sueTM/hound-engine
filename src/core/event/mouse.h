@@ -29,6 +29,14 @@ extern "C"
 #define HND_MOUSE_BUTTON_MIDDLE  2
 #define HND_MOUSE_BUTTON_RIGHT   3
 
+/* @note According to the definition in X11.h, the scroll up and scroll down events
+ * are handled by X11 as button press and release events, one after another.
+ *
+ * @note https://stackoverflow.com/questions/15510472/scrollwheel-event-in-x11
+ */
+#define HND_MOUSE_BUTTON_MIDDLE_UP   4
+#define HND_MOUSE_BUTTON_MIDDLE_DOWN 5
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

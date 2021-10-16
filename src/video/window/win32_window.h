@@ -38,13 +38,14 @@ extern "C"
 typedef struct hnd_win32_window_t
 {
   char *title;
-  unsigned int left;
-  unsigned int top;
-  unsigned int width;
-  unsigned int height;
+  hnd_vector position;
+  hnd_vector size;
   unsigned int decoration;
   unsigned int fullscreen;
   int running;
+
+  RECT rect;
+  RECT *global_rect;
 
   WNDCLASS class;
   HWND handle;
@@ -75,7 +76,7 @@ hnd_set_window_event
 LRESULT CALLBACK
 hnd_window_proc
 (
-  HWND   _window,
+  HWND   _handle,
   UINT   _message,
   WPARAM _wparam,
   LPARAM _lparam

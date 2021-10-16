@@ -27,9 +27,16 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-#include "../../core/core.h"
+#include <stdio.h>
 
 typedef float hnd_vector[4];
+
+void
+hnd_copy_vector
+(
+  hnd_vector _source,
+  hnd_vector _destination
+);
 
 void
 hnd_add_vector

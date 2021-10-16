@@ -50,12 +50,8 @@ typedef hnd_linux_window_t hnd_window_t;
  *       title and the buttons won't be displayed as well.
  *
  * @param _title      Specifies the text to be displayed on the new window's upper bar.
- * @param _left       Specifies the distance from the left side of the screen to the upper
- *                    left corner of the window.
- * @param _top        Specifies the distance from the top of the screen to the upper left
- *                    corner of the window.
- * @param _width      Specifies the window's width.
- * @param _height     Specifies the window's height.
+ * @param _position   Specifies the position of the top left corner of the window.
+ * @param _size       Specifies the width and the height of the window.
  * @param _decoration Specifies the window's decoration flags.
  *
  * @return The created window.
@@ -64,10 +60,8 @@ hnd_window_t *
 hnd_create_window
 (
   const char   *_title,
-  unsigned int  _left,
-  unsigned int  _top,
-  unsigned int  _width,
-  unsigned int  _height,
+  hnd_vector    _position,
+  hnd_vector    _size,
   unsigned int  _decoration
 );
 

@@ -44,6 +44,10 @@ typedef struct hnd_linux_event_t
   {
     unsigned int pressed_button;
     unsigned int released_button;
+
+    hnd_vector position;
+    hnd_vector pressed_position;
+    hnd_vector released_position;
   } mouse;
 } hnd_linux_event_t;
   

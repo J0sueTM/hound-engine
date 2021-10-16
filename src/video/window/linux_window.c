@@ -98,10 +98,8 @@ hnd_linux_window_t *
 hnd_create_window
 (
   const char   *_title,
-  unsigned int  _left,
-  unsigned int  _top,
-  unsigned int  _width,
-  unsigned int  _height,
+  hnd_vector    _position,
+  hnd_vector    _size,
   unsigned int  _decoration
 )
 {
@@ -110,10 +108,8 @@ hnd_create_window
     return NULL;
 
   new_window->title = (char *)_title;
-  new_window->left = _left;
-  new_window->top = _top;
-  new_window->width = _width;
-  new_window->height = _height;
+  hnd_copy_vector(_position, new_window->position);
+  hnd_copy_vector(_size, new_window->size);
   new_window->running = HND_OK;
 
   if (!hnd_connect_to_xcb(new_window))
@@ -155,10 +151,10 @@ hnd_create_window
                     XCB_COPY_FROM_PARENT,
                     new_window->id,
                     new_window->screen_data->root,
-                    new_window->left,
-                    new_window->top,
-                    new_window->width,
-                    new_window->height,
+                    new_window->position[0],
+                    new_window->position[1],
+                    new_window->size[0],
+                    new_window->size[1],
                     0,
                     XCB_WINDOW_CLASS_INPUT_OUTPUT,
                     new_window->renderer.visual_id,
@@ -171,7 +167,7 @@ hnd_create_window
   xcb_map_window(new_window->connection, new_window->id);
   xcb_flush(new_window->connection);
 
-  /* Finish opengl binding */
+  /* @note Finish opengl binding */
   new_window->renderer.gl_window = glXCreateWindow(new_window->renderer.display,
                                                    new_window->renderer.current_fb_config,
                                                    new_window->id,
@@ -193,7 +189,6 @@ hnd_create_window
 
     return NULL;
   }
-  
   hnd_print_debug(HND_LOG, HND_CREATED("OpenGL context"), HND_SUCCESS);
 
   hnd_print_debug(HND_LOG, HND_CREATED("window"), HND_SUCCESS);
@@ -266,10 +261,7 @@ hnd_poll_events
     _event->type = HND_EVENT_KEY_RELEASE;
 
     /**
-     * @bug I don't think it should be considered a bug, but, depending on the situation, this can
-     * be intriguing:
-     *
-     * On some keyboards, the KEY_PRESS or KEY_RELEASE event doesn't happen forever. Instead, it presses
+     * @bug On some keyboards, the KEY_PRESS or KEY_RELEASE event doesn't happen forever. Instead, it presses
      * and releases it, and then begin spamming the pressed key. You probably saw this sometimes, when typing,
      * where you would click a key, and it would insert it, wait a couple milisseconds, and then begin spamming
      * that key.
@@ -280,18 +272,39 @@ hnd_poll_events
   } break;
   case XCB_BUTTON_PRESS:
   {
+    /* @note As noted in ../../core/event/mouse.h, X11 handles the middle mouse scrolls as button press
+     * and release events.
+     */
+    xcb_button_press_event_t *temp_button_press_event = (xcb_button_press_event_t *)_event->xcb_event;
     _event->type = HND_EVENT_MOUSE_BUTTON_PRESS;
 
-    xcb_button_press_event_t *temp_button_press_event = (xcb_button_press_event_t *)_event->xcb_event;
     _event->mouse.pressed_button = temp_button_press_event->detail;
-
+    _event->mouse.pressed_position[0] = (float)temp_button_press_event->event_x;
+    _event->mouse.pressed_position[1] = (float)temp_button_press_event->event_y;
   } break;
   case XCB_BUTTON_RELEASE:
   {
+    xcb_button_release_event_t *temp_button_release_event = (xcb_button_release_event_t *)_event->xcb_event;
+
+    /* @note Already handled on XCB_BUTTON_PRESS */
+    if (temp_button_release_event->detail == HND_MOUSE_BUTTON_MIDDLE_UP ||
+        temp_button_release_event->detail == HND_MOUSE_BUTTON_MIDDLE_DOWN)
+      break;
+
     _event->type = HND_EVENT_MOUSE_BUTTON_RELEASE;
 
-    xcb_button_release_event_t *temp_button_release_event = (xcb_button_release_event_t *)_event->xcb_event;
     _event->mouse.released_button = temp_button_release_event->detail;
+    _event->mouse.released_position[0] = (float)temp_button_release_event->event_x;
+    _event->mouse.released_position[1] = (float)temp_button_release_event->event_y;
+
+  } break;
+  case XCB_MOTION_NOTIFY:
+  {
+    _event->type = HND_EVENT_MOUSE_MOVE;
+
+    xcb_motion_notify_event_t *temp_mouse_move_event = (xcb_motion_notify_event_t *)_event->xcb_event;
+    _event->mouse.position[0] = (float)temp_mouse_move_event->event_x;
+    _event->mouse.position[1] = (float)temp_mouse_move_event->event_y;
 
   } break;
   case XCB_CLIENT_MESSAGE:

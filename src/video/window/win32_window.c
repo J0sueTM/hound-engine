@@ -22,10 +22,8 @@ hnd_win32_window_t *
 hnd_create_window
 (
   const char   *_title,
-  unsigned int  _left,
-  unsigned int  _top,
-  unsigned int  _width,
-  unsigned int  _height,
+  hnd_vector    _position,
+  hnd_vector    _size,
   unsigned int  _decoration
 )
 {
@@ -34,10 +32,8 @@ hnd_create_window
     return NULL;
 
   new_window->title = (char *)_title;
-  new_window->left = _left;
-  new_window->top = _top;
-  new_window->width = _width;
-  new_window->height = _height;
+  hnd_copy_vector(_position, new_window->position);
+  hnd_copy_vector(_size, new_window->size);
   new_window->running = HND_OK;
   
  /* @note Make sure not assigned values are assigned zero */
@@ -49,14 +45,18 @@ hnd_create_window
   if (!hnd_assert(RegisterClass(&new_window->class), "Could not register window class"))
     return NULL;
 
+  new_window->rect =
+    (RECT)
+    {
+      (long)new_window->position[0],
+      (long)new_window->position[1],
+      (long)(new_window->position[0] + new_window->size[0]),
+      (long)(new_window->position[1] + new_window->size[1])
+    };
+
   new_window->style = WS_OVERLAPPEDWINDOW;
   new_window->extended_style = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
-  AdjustWindowRectEx(&((RECT){
-                               (long)new_window->left,
-                               (long)new_window->top,
-                               (long)new_window->width,
-                               (long)new_window->height
-                             }),
+  AdjustWindowRectEx(&new_window->rect,
                      new_window->style,
                      FALSE,
                      new_window->extended_style);
@@ -65,10 +65,10 @@ hnd_create_window
                                       new_window->class.lpszClassName,
                                       new_window->title,
                                       WS_CLIPSIBLINGS | WS_CLIPCHILDREN | new_window->style | WS_VISIBLE,
-                                      new_window->left,
-                                      new_window->top,
-                                      new_window->width,
-                                      new_window->height,
+                                      new_window->position[0],
+                                      new_window->position[1],
+                                      new_window->size[0],
+                                      new_window->size[1],
                                       GetDesktopWindow(),
                                       NULL,
                                       new_window->class.hInstance,
@@ -151,7 +151,7 @@ hnd_poll_events
   _event->message_result = GetMessage(&_event->message, NULL, 0, 0);
   if (_event->message_result < 0)
   {
-    CloseWindow(_window->handle);
+    DestroyWindow(_window->handle);
     
     return;
   }
@@ -163,7 +163,7 @@ hnd_poll_events
 LRESULT CALLBACK
 hnd_window_proc
 (
-  HWND   _window,
+  HWND   _handle,
   UINT   _message,
   WPARAM _wparam,
   LPARAM _lparam
@@ -171,38 +171,109 @@ hnd_window_proc
 {
   switch (_message)
   {
-  case WM_CREATE:
-    break;
   case WM_SIZE:
     hnd_resize_renderer_viewport(LOWORD(_lparam), HIWORD(_wparam));
 
     break;
   case WM_DESTROY:
   {
-    hnd_win32_window_t *window = (hnd_win32_window_t *)GetProp(_window, HND_WINDOW_DATA_PROPERTY);
-    window->running = HND_NK;
+    hnd_win32_window_t *temp_window = (hnd_win32_window_t *)GetProp(_handle, HND_WINDOW_DATA_PROPERTY);
+    temp_window->running = HND_NK;
 
   } break;
   case WM_CLOSE:
-    DestroyWindow(_window);
+    DestroyWindow(_handle);
     
     break;
   case WM_KEYDOWN:
   {
-    hnd_event_t *event = (hnd_event_t *)GetProp(_window, HND_WINDOW_EVENT_PROPERTY);
-    event->type = HND_EVENT_KEY_PRESS;
-    event->keyboard.pressed_key = _wparam;
+    hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
+    temp_event->type = HND_EVENT_KEY_PRESS;
+    temp_event->keyboard.pressed_key = _wparam;
 
   } break;
   case WM_KEYUP:
   {
-    hnd_event_t *event = (hnd_event_t *)GetProp(_window, HND_WINDOW_EVENT_PROPERTY);
-    event->type = HND_EVENT_KEY_RELEASE;
-    event->keyboard.released_key = _wparam;
+    hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
+    temp_event->type = HND_EVENT_KEY_RELEASE;
+    temp_event->keyboard.released_key = _wparam;
+
+  } break;
+  case WM_LBUTTONDOWN:
+  {
+    hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
+    temp_event->type = HND_EVENT_MOUSE_BUTTON_PRESS;
+    temp_event->mouse.pressed_button = HND_MOUSE_BUTTON_LEFT;
+    temp_event->mouse.pressed_position[0] = (float)LOWORD(_lparam);
+    temp_event->mouse.pressed_position[1] = (float)HIWORD(_lparam);
+
+  } break;
+  case WM_LBUTTONUP:
+  {
+    hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
+    temp_event->type = HND_EVENT_MOUSE_BUTTON_RELEASE;
+    temp_event->mouse.released_button = HND_MOUSE_BUTTON_LEFT;
+    temp_event->mouse.released_position[0] = (float)LOWORD(_lparam);
+    temp_event->mouse.released_position[1] = (float)HIWORD(_lparam);
+
+  } break;
+  case WM_RBUTTONDOWN:
+  {
+    hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
+    temp_event->type = HND_EVENT_MOUSE_BUTTON_PRESS;
+    temp_event->mouse.pressed_button = HND_MOUSE_BUTTON_RIGHT;
+    temp_event->mouse.pressed_position[0] = (float)LOWORD(_lparam);
+    temp_event->mouse.pressed_position[1] = (float)HIWORD(_lparam);
+
+  } break;
+  case WM_RBUTTONUP:
+  {
+    hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
+    temp_event->type = HND_EVENT_MOUSE_BUTTON_RELEASE;
+    temp_event->mouse.released_button = HND_MOUSE_BUTTON_RIGHT;
+    temp_event->mouse.released_position[0] = (float)LOWORD(_lparam);
+    temp_event->mouse.released_position[1] = (float)HIWORD(_lparam);
+
+  } break;
+  case WM_MBUTTONDOWN:
+  {
+    hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
+    temp_event->type = HND_EVENT_MOUSE_BUTTON_PRESS;
+    temp_event->mouse.pressed_button = HND_MOUSE_BUTTON_MIDDLE;
+    temp_event->mouse.pressed_position[0] = (float)LOWORD(_lparam);
+    temp_event->mouse.pressed_position[1] = (float)HIWORD(_lparam);
+
+  } break;
+  case WM_MBUTTONUP:
+  {
+    hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
+    temp_event->type = HND_EVENT_MOUSE_BUTTON_RELEASE;
+    temp_event->mouse.released_button = HND_MOUSE_BUTTON_MIDDLE;
+    temp_event->mouse.released_position[0] = (float)LOWORD(_lparam);
+    temp_event->mouse.released_position[1] = (float)HIWORD(_lparam);
+
+  } break;
+  case WM_MOUSEMOVE:
+  {
+    hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
+    temp_event->type = HND_EVENT_MOUSE_MOVE;
+    temp_event->mouse.position[0] = (float)LOWORD(_lparam); 
+    temp_event->mouse.position[1] = (float)HIWORD(_lparam);
+
+  } break;
+  case WM_MOUSEWHEEL:
+  {
+    /* @note https://stackoverflow.com/questions/9245303/rawinput-how-to-get-mouse-wheel-data */
+    hnd_event_t *temp_event = (hnd_event_t *)GetProp(_handle, HND_WINDOW_EVENT_PROPERTY);
+    temp_event->type = ((short)(unsigned short)HIWORD(_wparam) < 0)
+      ? HND_EVENT_MOUSE_WHEEL_SCROLL_UP
+      : HND_EVENT_MOUSE_WHEEL_SCROLL_DOWN;
+    temp_event->mouse.scrolled_position[0] = (float)LOWORD(_lparam); 
+    temp_event->mouse.scrolled_position[1] = (float)HIWORD(_lparam);
 
   } break;
   default:
-    return DefWindowProc(_window, _message, _wparam, _lparam);
+    return DefWindowProc(_handle, _message, _wparam, _lparam);
     
     break;
   }

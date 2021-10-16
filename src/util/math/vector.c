@@ -19,6 +19,17 @@
 #include "vector.h"
 
 void
+hnd_copy_vector
+(
+  hnd_vector _source,
+  hnd_vector _destination
+)
+{
+  for (int i = 0; i < 4; ++i)
+    _destination[i] = _source[i];
+}
+
+void
 hnd_add_vector
 (
   hnd_vector _left,

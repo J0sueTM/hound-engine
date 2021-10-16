@@ -42,8 +42,9 @@ typedef hnd_linux_event_t hnd_event_t;
 #define HND_EVENT_KEY_RELEASE 2
 
 /* @note Mouse */
-#define HND_EVENT_MOUSE_BUTTON_PRESS   3
-#define HND_EVENT_MOUSE_BUTTON_RELEASE 4
+#define HND_EVENT_MOUSE_MOVE              3
+#define HND_EVENT_MOUSE_BUTTON_PRESS      4
+#define HND_EVENT_MOUSE_BUTTON_RELEASE    5
 
 #ifdef __cplusplus
 }

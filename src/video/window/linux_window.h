@@ -36,11 +36,8 @@ extern "C"
 typedef struct hnd_linux_window_t
 {
   char *title;
-  unsigned int border;
-  unsigned int left;
-  unsigned int top;
-  unsigned int width;
-  unsigned int height;
+  hnd_vector position;
+  hnd_vector size;
   unsigned int decoration;
   unsigned int fullscreen;
   int running;

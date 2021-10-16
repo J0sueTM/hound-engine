@@ -27,6 +27,7 @@ extern "C"
 #include "../../core/core.h"
 #include "win32_keyboard.h"
 #include "mouse.h"
+  
 /**
  * @brief Keeps track of current events and their states.
  */
@@ -46,6 +47,11 @@ typedef struct hnd_win32_event_t
   {
     unsigned int pressed_button;
     unsigned int released_button;
+
+    hnd_vector position;
+    hnd_vector pressed_position;
+    hnd_vector released_position;
+    hnd_vector scrolled_position;
   } mouse;
 } hnd_win32_event_t;
 
