@@ -36,8 +36,8 @@ extern "C"
 typedef struct hnd_linux_window_t
 {
   char *title;
-  hnd_vector position;
-  hnd_vector size;
+  hnd_vector_t position;
+  hnd_vector_t size;
   unsigned int decoration;
   unsigned int fullscreen;
   int running;
@@ -46,7 +46,7 @@ typedef struct hnd_linux_window_t
   xcb_screen_t *screen_data;
   xcb_colormap_t colormap_id;
 
-  xcb_window_t id;
+  xcb_window_t handle;
   uint32_t event_mask;
   uint32_t value_mask;
   uint32_t value_list[2];

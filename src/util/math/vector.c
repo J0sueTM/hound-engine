@@ -21,8 +21,8 @@
 void
 hnd_copy_vector
 (
-  hnd_vector _source,
-  hnd_vector _destination
+  hnd_vector_t _source,
+  hnd_vector_t _destination
 )
 {
   for (int i = 0; i < 4; ++i)
@@ -32,8 +32,8 @@ hnd_copy_vector
 void
 hnd_add_vector
 (
-  hnd_vector _left,
-  hnd_vector _right
+  hnd_vector_t _left,
+  hnd_vector_t _right
 )
 {
   for (int i = 0; i < 4; ++i)
@@ -43,8 +43,8 @@ hnd_add_vector
 void
 hnd_subtract_vector
 (
-  hnd_vector _left,
-  hnd_vector _right
+  hnd_vector_t _left,
+  hnd_vector_t _right
 )
 {
   for (int i = 0; i < 4; ++i)
@@ -54,8 +54,8 @@ hnd_subtract_vector
 void
 hnd_multiply_vector
 (
-  hnd_vector _left,
-  hnd_vector _right
+  hnd_vector_t _left,
+  hnd_vector_t _right
 )
 {
   for (int i = 0; i < 4; ++i)
@@ -65,8 +65,8 @@ hnd_multiply_vector
 void
 hnd_divide_vector
 (
-  hnd_vector _left,
-  hnd_vector _right
+  hnd_vector_t _left,
+  hnd_vector_t _right
 )
 {
   for (int i = 0; i < 4; ++i)
@@ -76,7 +76,7 @@ hnd_divide_vector
 void
 hnd_print_vector
 (
-  hnd_vector _vector
+  hnd_vector_t _vector
 )
 {
   for (int i = 0; i < 4; ++i)

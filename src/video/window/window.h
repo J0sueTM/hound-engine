@@ -60,8 +60,8 @@ hnd_window_t *
 hnd_create_window
 (
   const char   *_title,
-  hnd_vector    _position,
-  hnd_vector    _size,
+  hnd_vector_t  _position,
+  hnd_vector_t  _size,
   unsigned int  _decoration
 );
 
@@ -87,6 +87,21 @@ hnd_poll_events
 (
   hnd_window_t *_window,
   hnd_event_t  *_event
+);
+
+/**
+ * @brief Sets window position.
+ *
+ * @param _window   Specifies the window whose positios should be changed.
+ * @param _position Specifies the new window position.
+ *
+ * @return Function state. HND_OK or HND_NK.
+ */
+int
+hnd_set_window_position
+(
+  hnd_window_t *_window,
+  hnd_vector_t  _position
 );
 
 /**

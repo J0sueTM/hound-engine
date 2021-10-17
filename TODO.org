@@ -14,10 +14,9 @@
        - [X] Text
        - [X] Window Popup
          
-   - *Events* [1/4] [25%]
+   - *Events* [2/4] [50%]
      - [X] Keyboard
-     - [ ] Mouse
-     - [ ] Window
+     - [X] Mouse
      - [ ] Joystick
 
 ** Video:

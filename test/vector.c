@@ -26,11 +26,11 @@ main
 {
   printf("-- 2D VECTORS --\n");
 
-  hnd_vector test_vector;
+  hnd_vector_t test_vector;
   test_vector[0] = 25.0f;
   test_vector[1] = 50.0f;
 
-  hnd_vector test_vector2;
+  hnd_vector_t test_vector2;
   test_vector2[0] = 75.0f;
   test_vector2[1] = 50.0f;
 
@@ -48,12 +48,12 @@ main
   hnd_print_vector(test_vector2);
 
   printf("-- 3D VECTORS --\n");
-  hnd_vector test_vector3;
+  hnd_vector_t test_vector3;
   test_vector[0] = 50.0f;
   test_vector[1] = 25.0f;
   test_vector[2] = 73.0f;
 
-  hnd_vector test_vector4;
+  hnd_vector_t test_vector4;
   test_vector4[0] = 25.0f;
   test_vector4[1] = 12.0f;
   test_vector4[2] = 55.0f;
@@ -62,11 +62,11 @@ main
   hnd_print_vector(test_vector4);
 
   printf("-- MULT --\n");
-  hnd_multiply_vector(test_vector3, (hnd_vector){ 2.0f, 1.5f, 0.5f });
+  hnd_multiply_vector(test_vector3, (hnd_vector_t){ 2.0f, 1.5f, 0.5f });
   hnd_print_vector(test_vector3);
 
   printf("-- 4D VECTOR --\n");
-  hnd_vector test_vector5;
+  hnd_vector_t test_vector5;
   test_vector5[0] = 4.0f;
   test_vector5[1] = 6.0f;
   test_vector5[2] = 10.0f;
@@ -75,6 +75,6 @@ main
   hnd_print_vector(test_vector5);
 
   printf("-- DIV --\n");
-  hnd_divide_vector(test_vector5, (hnd_vector){ 2.0f, 1.0f, 5.0f, 2.0f });
+  hnd_divide_vector(test_vector5, (hnd_vector_t){ 2.0f, 1.0f, 5.0f, 2.0f });
   hnd_print_vector(test_vector5);
 }

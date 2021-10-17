@@ -25,8 +25,8 @@ main
 )
 {
   hnd_window_t *window = hnd_create_window("Hound Engine Event Test",
-                                           (hnd_vector){ 0, 0 },
-                                           (hnd_vector){ 800, 600 },
+                                           (hnd_vector_t){ 0, 0 },
+                                           (hnd_vector_t){ 800, 600 },
                                            HND_WINDOW_DECORATION_ALL);
 
   hnd_set_renderer_clear_color(0.2f, 0.2f, 0.2f, 1.0f);

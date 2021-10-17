@@ -86,7 +86,7 @@ hnd_get_window_atoms
    */
   xcb_change_property(_window->connection,
                       XCB_PROP_MODE_REPLACE,
-                      _window->id,
+                      _window->handle,
                       _window->wm_protocols->atom,
                       XCB_ATOM_ATOM,
                       32,
@@ -98,8 +98,8 @@ hnd_linux_window_t *
 hnd_create_window
 (
   const char   *_title,
-  hnd_vector    _position,
-  hnd_vector    _size,
+  hnd_vector_t  _position,
+  hnd_vector_t  _size,
   unsigned int  _decoration
 )
 {
@@ -131,25 +131,26 @@ hnd_create_window
   
   new_window->value_mask = XCB_CW_EVENT_MASK | XCB_CW_COLORMAP;
 
-  new_window->event_mask = XCB_EVENT_MASK_EXPOSURE       |
-                           XCB_EVENT_MASK_BUTTON_PRESS   |
-                           XCB_EVENT_MASK_BUTTON_RELEASE |
-                           XCB_EVENT_MASK_POINTER_MOTION |
-                           XCB_EVENT_MASK_BUTTON_MOTION  |
-                           XCB_EVENT_MASK_ENTER_WINDOW   |
-                           XCB_EVENT_MASK_LEAVE_WINDOW   |
-                           XCB_EVENT_MASK_KEY_PRESS      |
-                           XCB_EVENT_MASK_KEY_RELEASE    |
-                           XCB_EVENT_MASK_PROPERTY_CHANGE;
+  new_window->event_mask = XCB_EVENT_MASK_EXPOSURE        |  
+                           XCB_EVENT_MASK_BUTTON_PRESS    |  
+                           XCB_EVENT_MASK_BUTTON_RELEASE  |  
+                           XCB_EVENT_MASK_POINTER_MOTION  |  
+                           XCB_EVENT_MASK_BUTTON_MOTION   |  
+                           XCB_EVENT_MASK_ENTER_WINDOW    |  
+                           XCB_EVENT_MASK_LEAVE_WINDOW    |  
+                           XCB_EVENT_MASK_KEY_PRESS       |  
+                           XCB_EVENT_MASK_KEY_RELEASE     |  
+                           XCB_EVENT_MASK_PROPERTY_CHANGE |
+                           XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 
   new_window->value_list[0] = new_window->event_mask;
   new_window->value_list[1] = new_window->colormap_id;
 
   /* Create window */
-  new_window->id = xcb_generate_id(new_window->connection);
+  new_window->handle = xcb_generate_id(new_window->connection);
   xcb_create_window(new_window->connection,
                     XCB_COPY_FROM_PARENT,
-                    new_window->id,
+                    new_window->handle,
                     new_window->screen_data->root,
                     new_window->position[0],
                     new_window->position[1],
@@ -164,13 +165,13 @@ hnd_create_window
   hnd_get_window_atoms(new_window);
   hnd_set_window_decoration(new_window, _decoration);
 
-  xcb_map_window(new_window->connection, new_window->id);
+  xcb_map_window(new_window->connection, new_window->handle);
   xcb_flush(new_window->connection);
 
   /* @note Finish opengl binding */
   new_window->renderer.gl_window = glXCreateWindow(new_window->renderer.display,
                                                    new_window->renderer.current_fb_config,
-                                                   new_window->id,
+                                                   new_window->handle,
                                                    0);
   if (!hnd_assert(new_window->renderer.gl_window, "Could not create OpenGL window"))
   {
@@ -302,9 +303,15 @@ hnd_poll_events
   {
     _event->type = HND_EVENT_MOUSE_MOVE;
 
-    xcb_motion_notify_event_t *temp_mouse_move_event = (xcb_motion_notify_event_t *)_event->xcb_event;
-    _event->mouse.position[0] = (float)temp_mouse_move_event->event_x;
-    _event->mouse.position[1] = (float)temp_mouse_move_event->event_y;
+    xcb_motion_notify_event_t *temp_motion_notify_event = (xcb_motion_notify_event_t *)_event->xcb_event;
+    _event->mouse.position[0] = (float)temp_motion_notify_event->event_x;
+    _event->mouse.position[1] = (float)temp_motion_notify_event->event_y;
+
+  } break;
+  case XCB_CONFIGURE_NOTIFY:
+  {
+    xcb_configure_notify_event_t *temp_configure_notify_event = (xcb_configure_notify_event_t *)_event->xcb_event;
+    printf("%d ; %d\n", temp_configure_notify_event->x, temp_configure_notify_event->y);
 
   } break;
   case XCB_CLIENT_MESSAGE:
@@ -316,8 +323,45 @@ hnd_poll_events
     
   } break;
   default:
-      break;
+    printf("hello\n");
+
+    break;
   }
+}
+
+int
+hnd_set_window_position
+(
+  hnd_window_t *_window,
+  hnd_vector_t  _position
+)
+{
+  if (!hnd_assert(_window != NULL, HND_SYNTAX))
+    return HND_NK;
+
+  /* @note From the man page for xcb_send_event, 32 bytes should be allocated. */
+  xcb_configure_notify_event_t *temp_notify_event = calloc(32, 1);
+  if (!hnd_assert(temp_notify_event != NULL, NULL))
+    return HND_NK;
+
+  temp_notify_event->event = _window->handle;
+  temp_notify_event->window = _window->handle;
+  temp_notify_event->response_type = XCB_CONFIGURE_NOTIFY;
+  temp_notify_event->x = (int16_t)_position[0]; 
+  temp_notify_event->y = (int16_t)_position[1]; 
+  temp_notify_event->above_sibling = XCB_NONE;
+  temp_notify_event->override_redirect = HND_NK;
+
+  xcb_send_event(_window->connection,
+                 HND_NK,
+                 _window->handle,
+                 XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+                 (char *)temp_notify_event);
+
+  xcb_flush(_window->connection);
+  free(temp_notify_event);
+
+  return HND_OK;
 }
 
 int
@@ -348,11 +392,9 @@ hnd_set_window_title
     return;
 
   _window->title = _title;
-  
-  /* @note Sets the window's title */
   xcb_change_property(_window->connection,
                       XCB_PROP_MODE_REPLACE,
-                      _window->id,
+                      _window->handle,
                       XCB_ATOM_WM_NAME,
                       XCB_ATOM_STRING,
                       8,

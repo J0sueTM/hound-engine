@@ -29,47 +29,47 @@ extern "C"
 
 #include <stdio.h>
 
-typedef float hnd_vector[4];
+typedef float hnd_vector_t[4];
 
 void
 hnd_copy_vector
 (
-  hnd_vector _source,
-  hnd_vector _destination
+  hnd_vector_t _source,
+  hnd_vector_t _destination
 );
 
 void
 hnd_add_vector
 (
-  hnd_vector _left,
-  hnd_vector _right
+  hnd_vector_t _left,
+  hnd_vector_t _right
 );
 
 void
 hnd_subtract_vector
 (
-  hnd_vector _left,
-  hnd_vector _right
+  hnd_vector_t _left,
+  hnd_vector_t _right
 );
 
 void
 hnd_multiply_vector
 (
-  hnd_vector _left,
-  hnd_vector _right
+  hnd_vector_t _left,
+  hnd_vector_t _right
 );
 
 void
 hnd_divide_vector
 (
-  hnd_vector _left,
-  hnd_vector _right
+  hnd_vector_t _left,
+  hnd_vector_t _right
 );
 
 void
 hnd_print_vector
 (
-  hnd_vector _vector
+  hnd_vector_t _vector
 );
 
 #ifdef __cplusplus
